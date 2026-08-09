@@ -1,0 +1,59 @@
+{
+  "generated_at": "2026-08-09T13:57:40+08:00",
+  "scope": "工程冻结前事实边界修复、公开部署与只读界面核验；不是指标抽取准确率评估",
+  "repository_commit": "0c5b3f743b916c255c48d260472b9e4549bddbb1",
+  "github_actions": {
+    "run_id": 31297579599,
+    "conclusion": "success",
+    "python_frontend_job_seconds": 26,
+    "container_job_seconds": 48
+  },
+  "render": {
+    "status": "Live",
+    "live_at": "2026-08-09T13:57:40+08:00"
+  },
+  "public_read_only_verification": {
+    "health": "ok",
+    "company_count": 1428,
+    "report_count": 3880,
+    "indicator_count": 80,
+    "result_count": 1164,
+    "evidence_count": 946,
+    "succeeded_job_count": 15,
+    "overview_unavailable_markers": 8,
+    "global_search_disabled_reports": 8,
+    "first_report_file_available": false,
+    "evidence_pdf_available": false,
+    "evidence_pdf_url": null,
+    "compare_boundary_visible": true,
+    "comparison_basis": "用户选定企业、同报告年度、同标准化单位；未使用行业归属推断",
+    "browser_console_errors": []
+  },
+  "screenshots": [
+    {
+      "path": "测试证据/工程冻结前修复验收/公网_分析总览事实边界.png",
+      "size_bytes": 164873,
+      "sha256": "e8de9305c1c88e8038a60099d5c54581316b9393ddf7d3866da2c20887d4cdd1"
+    },
+    {
+      "path": "测试证据/工程冻结前修复验收/公网_报告解析持久化边界.png",
+      "size_bytes": 66048,
+      "sha256": "06592f4a13309da1134ec5e3381c4bfed44f62bedce651f131d11ed3b0ba9dd6"
+    },
+    {
+      "path": "测试证据/工程冻结前修复验收/公网_企业对比机器边界.png",
+      "size_bytes": 61530,
+      "sha256": "47caa423320582040a1bb11692dc33e21c8804fec656456e159b0a7d07cc44cb"
+    },
+    {
+      "path": "测试证据/工程冻结前修复验收/公网_证据原文未挂载边界.png",
+      "size_bytes": 96156,
+      "sha256": "4fc04d1d985ea9b8fa136db40561236ba44a89a73891fdac1f7007fc882aa3aa"
+    }
+  ],
+  "fact_boundary": [
+    "candidate_found、机器等级与置信度均不等于人工金标正确率。",
+    "本轮未重复公网上传冒烟测试，也未把上传样本计入准确率。",
+    "免费竞赛在线演示环境的运行期上传数据不保证持久保存。"
+  ]
+}
