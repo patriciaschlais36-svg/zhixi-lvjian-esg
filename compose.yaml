@@ -1,0 +1,22 @@
+name: zhixi-lvjian
+
+services:
+  esg-platform:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: zhixi-lvjian-esg:latest
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      ESG_PLATFORM_HOST: 0.0.0.0
+      ESG_PLATFORM_PORT: 8000
+      ESG_PLATFORM_RUNTIME_DIR: /data
+      ESG_PLATFORM_JOB_TIMEOUT_SECONDS: 7200
+      ESG_PLATFORM_MAX_UPLOAD_BYTES: 31457280
+    volumes:
+      - esg_runtime:/data
+
+volumes:
+  esg_runtime:

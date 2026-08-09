@@ -1,0 +1,138 @@
+{
+  "purpose": "测量公开演示种子上的进程内查询性能，不含网络传输、浏览器渲染和算法抽取耗时",
+  "generated_at": "2026-08-09T02:42:24Z",
+  "method": {
+    "client": "Flask test client, single process, sequential requests",
+    "warmup_iterations_per_endpoint": 3,
+    "timed_iterations_default": 30,
+    "csv_export_iterations": 10,
+    "timing_clock": "time.perf_counter_ns",
+    "memory_scope": "tracemalloc追踪的Python分配内存，不等同于进程RSS"
+  },
+  "dataset_counts": {
+    "companies": 1428,
+    "reports": 3880,
+    "indicators": 80,
+    "jobs": 15,
+    "results": 1164,
+    "evidence": 946
+  },
+  "database_size_bytes": 21508096,
+  "benchmark_wall_seconds": 4.223,
+  "python_traced_current_bytes": 265615,
+  "python_traced_peak_bytes": 699045,
+  "database_integrity": "ok",
+  "foreign_key_errors": 0,
+  "endpoints": [
+    {
+      "name": "平台概览",
+      "path": "/api/v1/summary",
+      "iterations": 30,
+      "response_bytes": 364,
+      "min_ms": 4.973,
+      "median_ms": 5.731,
+      "mean_ms": 5.738,
+      "p95_ms": 6.52,
+      "max_ms": 6.947
+    },
+    {
+      "name": "企业分页",
+      "path": "/api/v1/companies?page=1&page_size=20",
+      "iterations": 30,
+      "response_bytes": 4487,
+      "min_ms": 33.267,
+      "median_ms": 35.18,
+      "mean_ms": 35.209,
+      "p95_ms": 36.631,
+      "max_ms": 37.926
+    },
+    {
+      "name": "企业精确检索",
+      "path": "/api/v1/companies?q=600000&page_size=20",
+      "iterations": 30,
+      "response_bytes": 359,
+      "min_ms": 4.741,
+      "median_ms": 5.922,
+      "mean_ms": 5.858,
+      "p95_ms": 6.697,
+      "max_ms": 6.7
+    },
+    {
+      "name": "报告分页",
+      "path": "/api/v1/reports?page=1&page_size=20",
+      "iterations": 30,
+      "response_bytes": 10017,
+      "min_ms": 29.15,
+      "median_ms": 31.296,
+      "mean_ms": 31.259,
+      "p95_ms": 32.703,
+      "max_ms": 32.8
+    },
+    {
+      "name": "80项指标目录",
+      "path": "/api/v1/indicators",
+      "iterations": 30,
+      "response_bytes": 43838,
+      "min_ms": 8.043,
+      "median_ms": 9.145,
+      "mean_ms": 9.124,
+      "p95_ms": 9.773,
+      "max_ms": 12.514
+    },
+    {
+      "name": "证据全文检索",
+      "path": "/api/v1/search?q=温室气体&limit=50",
+      "iterations": 30,
+      "response_bytes": 75308,
+      "min_ms": 14.26,
+      "median_ms": 15.389,
+      "mean_ms": 15.51,
+      "p95_ms": 17.191,
+      "max_ms": 18.132
+    },
+    {
+      "name": "三年趋势",
+      "path": "/api/v1/trends?company_id=company_50cedc6de72754d8b62876f3a9b88819&indicator_id=E_Q_009",
+      "iterations": 30,
+      "response_bytes": 985,
+      "min_ms": 4.359,
+      "median_ms": 5.078,
+      "mean_ms": 5.062,
+      "p95_ms": 5.84,
+      "max_ms": 5.85
+    },
+    {
+      "name": "两企业对比",
+      "path": "/api/v1/compare?company_id=company_50cedc6de72754d8b62876f3a9b88819&company_id=company_7bb4282fee98577d909febf19da1acbf&indicator_id=E_Q_009&year=2025",
+      "iterations": 30,
+      "response_bytes": 1050,
+      "min_ms": 3.828,
+      "median_ms": 5.233,
+      "mean_ms": 5.115,
+      "p95_ms": 5.957,
+      "max_ms": 6.098
+    },
+    {
+      "name": "单任务结果",
+      "path": "/api/v1/results?job_id=job_dc182e192bcc5a38a416b4cb8a612b5d",
+      "iterations": 30,
+      "response_bytes": 59402,
+      "min_ms": 10.179,
+      "median_ms": 11.144,
+      "mean_ms": 11.228,
+      "p95_ms": 12.434,
+      "max_ms": 13.509
+    },
+    {
+      "name": "单报告结果导出",
+      "path": "/api/v1/exports/results.csv?report_version_id=version_6c182212e1ff5c2690bf9b50246de27b",
+      "iterations": 10,
+      "response_bytes": 15102,
+      "min_ms": 6.98,
+      "median_ms": 7.77,
+      "mean_ms": 7.825,
+      "p95_ms": 8.763,
+      "max_ms": 8.763
+    }
+  ]
+}

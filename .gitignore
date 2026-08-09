@@ -1,0 +1,19 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.env
+api_config.json
+
+# 早期快速审计产物不进入正式开源仓库。
+/数据产物/
+/运行产物/
+/运行缓存/
+**/运行产物/
+**/运行缓存/
+/运行环境/
+/平台运行数据/
+
+# SQLite 运行时临时文件。
+*.sqlite-shm
+*.sqlite-wal
+*.sqlite-journal

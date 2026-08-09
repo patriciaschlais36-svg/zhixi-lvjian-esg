@@ -1,0 +1,52 @@
+{
+  "verification_name": "平台单报告真实端到端链路验收",
+  "generated_at": "2026-08-09T01:44:34Z",
+  "scope": {
+    "report_count": 1,
+    "stock_code": "600372",
+    "report_year": 2025,
+    "priority": "P0",
+    "llm_api_enabled": false,
+    "existing_ocr_cache_configured": true,
+    "ocr_cache_hit_verified": false
+  },
+  "upload_and_queue": {
+    "blob_deduplicated": false,
+    "report_version_deduplicated": false,
+    "job_deduplicated": false,
+    "pdf_eof_ok": true,
+    "single_claim_verified": true
+  },
+  "execution": {
+    "job_status": "succeeded",
+    "job_stage": "分析完成",
+    "pipeline_version": "智析绿鉴可信抽取引擎",
+    "wall_time_seconds": 17.472,
+    "error_code": null
+  },
+  "database_import": {
+    "result_rows": 81,
+    "indicator_slots": 39,
+    "candidate_rows": 73,
+    "no_candidate_rows": 8,
+    "auto_high_rows": 2,
+    "auto_medium_rows": 36,
+    "needs_review_rows": 37,
+    "not_verified_rows": 6,
+    "non_unreviewed_rows": 0,
+    "evidence_rows": 73,
+    "no_candidate_rows_with_stale_values": 0,
+    "database_integrity": "ok",
+    "foreign_key_error_count": 0
+  },
+  "artifact_hashes": {
+    "pipeline_plan_sha256": "dc5feb7a32428de41b64dad47df04ad62bc366c2fc62bd23bd8bf8eef3467b96",
+    "final_extraction_csv_sha256": "f9afb2b9c48ab9424297515706f5409187ad78451a17c653f2785103e12162bc"
+  },
+  "claim_boundary": [
+    "本验收只证明新增平台已真实调用统一算法入口并完成结果、证据入库。",
+    "本验收配置了既有OCR缓存目录，但未独立证明发生缓存命中；运行时间不得解释为性能提升。",
+    "自动验收等级是机器证据质量状态，不等于人工金标准确率。",
+    "所有结果的人工复核状态保持unreviewed。"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "samples": [
+    {
+      "sample_id": "U001",
+      "stock_code": "600000",
+      "short_name": "示例公司",
+      "report_type": "ESG",
+      "report_year": "2025",
+      "file_name": "示例报告.pdf",
+      "pdf_path": "示例数据/示例报告.pdf",
+      "sampling_reason": "命令行格式示例"
+    }
+  ]
+}

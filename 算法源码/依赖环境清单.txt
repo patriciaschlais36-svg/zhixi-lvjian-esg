@@ -1,0 +1,17 @@
+# 核心抽取
+pdfplumber>=0.11
+openpyxl>=3.1
+rapidfuzz>=3.9
+
+# OCR条件模块
+pypdfium2>=4.30
+rapidocr>=3.0
+pypdf>=5.0
+
+# 动态分析平台
+Flask>=3.1
+waitress>=3.0
+
+# 大模型API条件模块
+requests>=2.31
+anthropic>=0.71,<1

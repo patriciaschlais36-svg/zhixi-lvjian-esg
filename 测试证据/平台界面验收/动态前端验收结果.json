@@ -1,0 +1,326 @@
+{
+  "base_url": "http://127.0.0.1:8766",
+  "views": {
+    "upload": {
+      "visible": true,
+      "active_nav": "page"
+    },
+    "companies": {
+      "visible": true,
+      "active_nav": "page"
+    },
+    "indicators": {
+      "visible": true,
+      "active_nav": "page"
+    },
+    "analysis": {
+      "visible": true,
+      "active_nav": "page"
+    },
+    "evidence": {
+      "visible": true,
+      "active_nav": "page"
+    },
+    "pipeline": {
+      "visible": true,
+      "active_nav": "page"
+    },
+    "overview": {
+      "visible": true,
+      "active_nav": "page"
+    }
+  },
+  "screenshots": {
+    "desktop": "测试证据\\平台界面验收\\桌面端_分析总览.png",
+    "analysis": "测试证据\\平台界面验收\\桌面端_趋势与企业对比.png",
+    "mobile": "测试证据\\平台界面验收\\移动端_分析总览.png"
+  },
+  "console_errors": [],
+  "title": "智析绿鉴—面向上市公司ESG报告的多模态指标抽取与可信分析系统",
+  "service_status": "服务就绪\n3,880 份报告",
+  "kpi_count": 4,
+  "canvases": {
+    "yearChart": {
+      "width": 1105,
+      "height": 368,
+      "colored": 206665,
+      "nonblank": true
+    },
+    "jobChart": {
+      "width": 528,
+      "height": 283,
+      "colored": 19222,
+      "nonblank": true
+    },
+    "indicatorChart": {
+      "width": 528,
+      "height": 283,
+      "colored": 64211,
+      "nonblank": true
+    }
+  },
+  "company_rows": 20,
+  "company_detail_reports": 3,
+  "indicator_rows": 80,
+  "environment_indicator_rows": 30,
+  "trend_meta": "3 个年度，单位：m3",
+  "trend_canvas": {
+    "width": 1105,
+    "height": 368,
+    "colored": 14994,
+    "nonblank": true
+  },
+  "comparison_items": 2,
+  "evidence_search_items": 50,
+  "evidence_detail_visible": true,
+  "job_rows": 15,
+  "global_search_groups": 2,
+  "global_search_closed": true,
+  "upload_form_controls": 6,
+  "mobile_overflow": {
+    "viewport": 390,
+    "scroll": 390
+  },
+  "mobile_overflow_elements": [
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "cls": "nav-item",
+      "left": 342,
+      "right": 447,
+      "width": 105
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "cls": "nav-item",
+      "left": 450,
+      "right": 555,
+      "width": 105
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "cls": "nav-item",
+      "left": 558,
+      "right": 663,
+      "width": 105
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "cls": "nav-item",
+      "left": 666,
+      "right": 771,
+      "width": 105
+    },
+    {
+      "tag": "TABLE",
+      "id": "",
+      "cls": "",
+      "left": 28,
+      "right": 748,
+      "width": 720
+    },
+    {
+      "tag": "THEAD",
+      "id": "",
+      "cls": "",
+      "left": 28,
+      "right": 748,
+      "width": 720
+    },
+    {
+      "tag": "TR",
+      "id": "",
+      "cls": "",
+      "left": 28,
+      "right": 748,
+      "width": 720
+    },
+    {
+      "tag": "TH",
+      "id": "",
+      "cls": "",
+      "left": 210.390625,
+      "right": 569.890625,
+      "width": 359.5
+    },
+    {
+      "tag": "TH",
+      "id": "",
+      "cls": "",
+      "left": 569.890625,
+      "right": 677.890625,
+      "width": 108
+    },
+    {
+      "tag": "TH",
+      "id": "",
+      "cls": "",
+      "left": 677.890625,
+      "right": 748,
+      "width": 70.109375
+    },
+    {
+      "tag": "TBODY",
+      "id": "",
+      "cls": "",
+      "left": 28,
+      "right": 748,
+      "width": 720
+    },
+    {
+      "tag": "TR",
+      "id": "",
+      "cls": "",
+      "left": 28,
+      "right": 748,
+      "width": 720
+    },
+    {
+      "tag": "TD",
+      "id": "",
+      "cls": "",
+      "left": 210.390625,
+      "right": 569.890625,
+      "width": 359.5
+    },
+    {
+      "tag": "TD",
+      "id": "",
+      "cls": "",
+      "left": 569.890625,
+      "right": 677.890625,
+      "width": 108
+    },
+    {
+      "tag": "SPAN",
+      "id": "",
+      "cls": "status-badge is-success",
+      "left": 580.890625,
+      "right": 666.890625,
+      "width": 86
+    },
+    {
+      "tag": "TD",
+      "id": "",
+      "cls": "",
+      "left": 677.890625,
+      "right": 748,
+      "width": 70.109375
+    },
+    {
+      "tag": "A",
+      "id": "",
+      "cls": "text-link",
+      "left": 688.890625,
+      "right": 736.984375,
+      "width": 48.09375
+    },
+    {
+      "tag": "TR",
+      "id": "",
+      "cls": "",
+      "left": 28,
+      "right": 748,
+      "width": 720
+    },
+    {
+      "tag": "TD",
+      "id": "",
+      "cls": "",
+      "left": 210.390625,
+      "right": 569.890625,
+      "width": 359.5
+    },
+    {
+      "tag": "TD",
+      "id": "",
+      "cls": "",
+      "left": 569.890625,
+      "right": 677.890625,
+      "width": 108
+    },
+    {
+      "tag": "SPAN",
+      "id": "",
+      "cls": "status-badge is-success",
+      "left": 580.890625,
+      "right": 666.890625,
+      "width": 86
+    },
+    {
+      "tag": "TD",
+      "id": "",
+      "cls": "",
+      "left": 677.890625,
+      "right": 748,
+      "width": 70.109375
+    },
+    {
+      "tag": "A",
+      "id": "",
+      "cls": "text-link",
+      "left": 688.890625,
+      "right": 736.984375,
+      "width": 48.09375
+    },
+    {
+      "tag": "TR",
+      "id": "",
+      "cls": "",
+      "left": 28,
+      "right": 748,
+      "width": 720
+    },
+    {
+      "tag": "TD",
+      "id": "",
+      "cls": "",
+      "left": 210.390625,
+      "right": 569.890625,
+      "width": 359.5
+    },
+    {
+      "tag": "TD",
+      "id": "",
+      "cls": "",
+      "left": 569.890625,
+      "right": 677.890625,
+      "width": 108
+    },
+    {
+      "tag": "SPAN",
+      "id": "",
+      "cls": "status-badge is-success",
+      "left": 580.890625,
+      "right": 666.890625,
+      "width": 86
+    },
+    {
+      "tag": "TD",
+      "id": "",
+      "cls": "",
+      "left": 677.890625,
+      "right": 748,
+      "width": 70.109375
+    },
+    {
+      "tag": "A",
+      "id": "",
+      "cls": "text-link",
+      "left": 688.890625,
+      "right": 736.984375,
+      "width": 48.09375
+    },
+    {
+      "tag": "TR",
+      "id": "",
+      "cls": "",
+      "left": 28,
+      "right": 748,
+      "width": 720
+    }
+  ]
+}

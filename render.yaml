@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: zhixi-lvjian-esg
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/v1/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: ESG_PLATFORM_HOST
+        value: 0.0.0.0
+      - key: ESG_PLATFORM_PORT
+        value: 8000
+      - key: ESG_PLATFORM_RUNTIME_DIR
+        value: /data
+      - key: ESG_PLATFORM_JOB_TIMEOUT_SECONDS
+        value: 7200
+      - key: ESG_PLATFORM_MAX_UPLOAD_BYTES
+        value: 31457280
+    disk:
+      name: esg-runtime
+      mountPath: /data
+      sizeGB: 1
+

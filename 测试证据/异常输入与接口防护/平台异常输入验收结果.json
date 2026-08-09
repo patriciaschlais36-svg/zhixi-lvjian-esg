@@ -1,0 +1,123 @@
+{
+  "purpose": "验证新增动态平台的异常输入、幂等、参数化查询与路径边界，不重复算法基础抽取实验",
+  "generated_at": "2026-08-09T02:41:11Z",
+  "case_count": 14,
+  "passed_count": 14,
+  "failed_count": 0,
+  "database_integrity": "ok",
+  "foreign_key_errors": 0,
+  "cases": [
+    {
+      "case": "伪造PDF文件头",
+      "status_code": 400,
+      "error_code": "INVALID_ARGUMENT",
+      "expected_status": 400,
+      "expected_error_code": "INVALID_ARGUMENT",
+      "passed": true
+    },
+    {
+      "case": "错误扩展名",
+      "status_code": 400,
+      "error_code": "INVALID_ARGUMENT",
+      "expected_status": 400,
+      "expected_error_code": "INVALID_ARGUMENT",
+      "passed": true
+    },
+    {
+      "case": "股票代码长度错误",
+      "status_code": 400,
+      "error_code": "INVALID_ARGUMENT",
+      "expected_status": 400,
+      "expected_error_code": "INVALID_ARGUMENT",
+      "passed": true
+    },
+    {
+      "case": "报告年份越界",
+      "status_code": 400,
+      "error_code": "INVALID_ARGUMENT",
+      "expected_status": 400,
+      "expected_error_code": "INVALID_ARGUMENT",
+      "passed": true
+    },
+    {
+      "case": "报告标题为空",
+      "status_code": 400,
+      "error_code": "INVALID_ARGUMENT",
+      "expected_status": 400,
+      "expected_error_code": "INVALID_ARGUMENT",
+      "passed": true
+    },
+    {
+      "case": "缺少PDF尾标记时降级登记",
+      "status_code": 202,
+      "error_code": null,
+      "expected_status": 202,
+      "expected_error_code": null,
+      "passed": true,
+      "pdf_eof_ok": false
+    },
+    {
+      "case": "合法PDF登记",
+      "status_code": 202,
+      "error_code": null,
+      "expected_status": 202,
+      "expected_error_code": null,
+      "passed": true
+    },
+    {
+      "case": "同一幂等键绑定不同文件",
+      "status_code": 400,
+      "error_code": "INVALID_ARGUMENT",
+      "expected_status": 400,
+      "expected_error_code": "INVALID_ARGUMENT",
+      "passed": true
+    },
+    {
+      "case": "相同文件绑定不同公司",
+      "status_code": 400,
+      "error_code": "INVALID_ARGUMENT",
+      "expected_status": 400,
+      "expected_error_code": "INVALID_ARGUMENT",
+      "passed": true
+    },
+    {
+      "case": "超长检索词",
+      "status_code": 400,
+      "error_code": "INVALID_ARGUMENT",
+      "expected_status": 400,
+      "expected_error_code": "INVALID_ARGUMENT",
+      "passed": true
+    },
+    {
+      "case": "检索参数化防注入",
+      "status_code": 200,
+      "error_code": null,
+      "expected_status": 200,
+      "expected_error_code": null,
+      "passed": true,
+      "database_integrity": "ok"
+    },
+    {
+      "case": "未知接口统一错误",
+      "status_code": 404,
+      "error_code": "HTTP_404",
+      "expected_status": 404,
+      "expected_error_code": null,
+      "passed": true
+    },
+    {
+      "case": "报告文件路径越界防护",
+      "resolved_path": null,
+      "expected": null,
+      "passed": true
+    },
+    {
+      "case": "超过上传上限",
+      "status_code": 413,
+      "error_code": "UPLOAD_TOO_LARGE",
+      "expected_status": 413,
+      "expected_error_code": "UPLOAD_TOO_LARGE",
+      "passed": true
+    }
+  ]
+}
