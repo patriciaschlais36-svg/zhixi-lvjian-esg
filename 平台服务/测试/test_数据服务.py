@@ -24,7 +24,7 @@ class 数据服务测试(unittest.TestCase):
         self.临时目录对象 = tempfile.TemporaryDirectory(prefix="esg_platform_test_")
         self.临时目录 = Path(self.临时目录对象.name)
         self.路径 = 平台路径(
-            种子数据库=项目根目录 / "正式数据产物" / "三年报告元数据与P531哈希库.sqlite",
+            种子数据库=项目根目录 / "正式数据产物" / "平台公开演示数据库.sqlite",
             运行目录=self.临时目录,
             运行数据库=self.临时目录 / "平台数据库.sqlite",
             上传目录=self.临时目录 / "上传报告",
@@ -188,6 +188,8 @@ class 数据服务测试(unittest.TestCase):
 
     def test_既有真实产物可保守导入且保持幂等(self) -> None:
         运行目录 = 项目根目录 / "运行产物" / "迁移后冒烟5份"
+        if not 运行目录.is_dir():
+            self.skipTest("公开仓库不附带本机回归运行产物；该用例仅在完整验收环境执行。")
         原计划路径 = next(运行目录.rglob("pipeline_plan_*.json"))
         原计划 = json.loads(原计划路径.read_text(encoding="utf-8-sig"))
         原最终CSV = Path(原计划["final_extraction_csv"])
