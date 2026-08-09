@@ -20,6 +20,7 @@ from typing import Any, Iterator
 默认指标文件 = 项目根目录 / "算法源码" / "配置" / "ESG指标体系.json"
 
 命名空间 = uuid.UUID("7cf26953-93dc-5f0f-bdbd-b00fb11cdca6")
+允许报告类型 = {"ESG", "SD", "CSR", "ENV", "OTHER"}
 
 
 def 当前时间() -> str:
@@ -51,6 +52,22 @@ def _JSON文本(值: Any) -> str:
 def _环境路径(名称: str, 默认值: Path) -> Path:
     配置值 = os.environ.get(名称, "").strip()
     return Path(配置值 or 默认值).resolve()
+
+
+def 规范报告类型(报告类型: str | None, 报告标题: str) -> str:
+    显式类型 = (报告类型 or "").strip().upper()
+    if 显式类型:
+        if 显式类型 not in 允许报告类型:
+            raise ValueError("报告类型只能为ESG、SD、CSR、ENV或OTHER")
+        return 显式类型
+    标题小写 = 报告标题.lower()
+    if "社会责任" in 报告标题 or "csr" in 标题小写:
+        return "CSR"
+    if "可持续" in 报告标题 or "sustainab" in 标题小写:
+        return "SD"
+    if "环境报告" in 报告标题 or "environmental report" in 标题小写:
+        return "ENV"
+    return "ESG"
 
 
 @dataclass(frozen=True)
@@ -377,7 +394,8 @@ class 数据服务:
             行 = 连接.execute(
                 """
                 SELECT r.report_id, rv.report_version_id, r.report_year, r.canonical_title,
-                       r.primary_report_type, r.status, c.company_id, c.stock_code,
+                       r.primary_report_type, r.source_site, r.source_announcement_id,
+                       r.status, c.company_id, c.stock_code,
                        c.current_short_name, rv.original_file_name, rv.verification_status,
                        rv.quality_flags_json, fb.sha256, fb.file_size_bytes,
                        fb.pdf_header_ok, fb.pdf_eof_ok
@@ -432,6 +450,8 @@ class 数据服务:
     def 登记上传并创建任务(
         self, 临时文件: Path, *, 股票代码: str, 报告年份: int,
         企业简称: str, 报告标题: str, 原始文件名: str,
+        报告类型: str | None = None, 来源站点: str | None = None,
+        来源公告编号: str | None = None,
         请求幂等键: str | None = None,
         最大字节: int = 30 * 1024 * 1024,
     ) -> dict[str, Any]:
@@ -442,6 +462,9 @@ class 数据服务:
         企业简称, 报告标题 = 企业简称.strip(), 报告标题.strip()
         if not 企业简称 or not 报告标题:
             raise ValueError("企业简称和报告标题不能为空")
+        标准报告类型 = 规范报告类型(报告类型, 报告标题)
+        来源站点 = (来源站点 or "").strip()[:200] or None
+        来源公告编号 = (来源公告编号 or "").strip()[:300] or None
 
         摘要, 大小, 尾标记正常 = self._验证PDF(临时文件, 最大字节)
         最终文件 = self.路径.上传目录 / f"{摘要}.pdf"
@@ -459,7 +482,7 @@ class 数据服务:
                 已有任务 = 连接.execute(
                     """
                     SELECT j.job_id, j.run_id, j.report_version_id, fb.sha256, fb.pdf_eof_ok,
-                           c.stock_code, r.report_year
+                           c.stock_code, r.report_year, r.primary_report_type
                       FROM analysis_job j
                       JOIN report_version rv ON rv.report_version_id=j.report_version_id
                       JOIN file_blob fb ON fb.file_blob_id=rv.file_blob_id
@@ -475,6 +498,7 @@ class 数据服务:
                     if (
                         已有任务["stock_code"] != 股票代码
                         or int(已有任务["report_year"]) != int(报告年份)
+                        or 已有任务["primary_report_type"] != 标准报告类型
                     ):
                         raise ValueError("同一请求幂等键已用于不同报告元数据")
                     return {
@@ -487,7 +511,8 @@ class 数据服务:
                     }
             已有内容 = 连接.execute(
                 """
-                SELECT fb.file_blob_id, rv.report_version_id, r.report_year, c.stock_code
+                SELECT fb.file_blob_id, rv.report_version_id, r.report_year,
+                       r.primary_report_type, c.stock_code
                   FROM file_blob fb
                   JOIN report_version rv ON rv.file_blob_id=fb.file_blob_id
                   JOIN report r ON r.report_id=rv.report_id
@@ -498,7 +523,9 @@ class 数据服务:
                 (摘要,),
             ).fetchone()
             if 已有内容 and (
-                已有内容["stock_code"] != 股票代码 or int(已有内容["report_year"]) != int(报告年份)
+                已有内容["stock_code"] != 股票代码
+                or int(已有内容["report_year"]) != int(报告年份)
+                or 已有内容["primary_report_type"] != 标准报告类型
             ):
                 raise ValueError("相同文件内容已登记为另一公司或年份，请核对上传元数据")
 
@@ -561,20 +588,38 @@ class 数据服务:
                     (企业简称, 时间, 企业编号),
                 )
 
-            逻辑键 = f"SSE|{股票代码}|{报告年份}|ESG|zh-CN|company|1"
+            逻辑键 = f"SSE|{股票代码}|{报告年份}|{标准报告类型}|zh-CN|company|1"
             报告 = 连接.execute("SELECT report_id FROM report WHERE logical_key=?", (逻辑键,)).fetchone()
             报告编号 = 报告[0] if 报告 else 稳定编号("report", 逻辑键)
             if not 报告:
                 连接.execute(
                     """
                     INSERT INTO report VALUES (
-                        ?, ?, ?, 'ESG', 'ESG', 'zh-CN', 'company', 1,
-                        'user_upload', NULL, ?, ?, 'active', ?, ?
+                        ?, ?, ?, ?, ?, 'zh-CN', 'company', 1,
+                        ?, ?, ?, ?, 'active', ?, ?
                     )
                     """,
-                    (报告编号, 企业编号, 报告年份, 报告标题, 逻辑键, 时间, 时间),
+                    (
+                        报告编号, 企业编号, 报告年份, 标准报告类型, 标准报告类型,
+                        来源站点 or "user_upload", 来源公告编号, 报告标题, 逻辑键,
+                        时间, 时间,
+                    ),
                 )
-                连接.execute("INSERT OR IGNORE INTO report_type_tag VALUES (?, 'ESG')", (报告编号,))
+                连接.execute(
+                    "INSERT OR IGNORE INTO report_type_tag VALUES (?, ?)",
+                    (报告编号, 标准报告类型),
+                )
+            elif 来源站点 or 来源公告编号:
+                连接.execute(
+                    """
+                    UPDATE report
+                       SET source_site=COALESCE(source_site, ?),
+                           source_announcement_id=COALESCE(source_announcement_id, ?),
+                           updated_at=?
+                     WHERE report_id=?
+                    """,
+                    (来源站点, 来源公告编号, 时间, 报告编号),
+                )
 
             内容 = 连接.execute("SELECT file_blob_id FROM file_blob WHERE sha256=?", (摘要,)).fetchone()
             内容编号 = 内容[0] if 内容 else 稳定编号("blob", 摘要)

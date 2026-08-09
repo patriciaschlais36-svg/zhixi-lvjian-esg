@@ -235,6 +235,7 @@ def 创建平台应用(
                 企业简称=企业简称,
                 报告标题=报告标题,
                 原始文件名=原始文件名,
+                报告类型=request.form.get("report_type") or None,
                 请求幂等键=request.headers.get("Idempotency-Key") or None,
                 最大字节=应用.config["MAX_CONTENT_LENGTH"],
             )

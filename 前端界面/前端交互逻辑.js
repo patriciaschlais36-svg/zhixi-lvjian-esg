@@ -398,6 +398,7 @@ async function submitUpload(event) {
   form.append("stock_code", byId("uploadStockCode")?.value.trim() || "");
   form.append("company_name", byId("uploadCompanyName")?.value.trim() || "");
   form.append("report_year", byId("uploadReportYear")?.value || "");
+  form.append("report_type", byId("uploadReportType")?.value || "ESG");
   form.append("report_title", byId("uploadReportTitle")?.value.trim() || "");
   const button = byId("runUploadAnalysis");
   if (button) { button.disabled = true; button.dataset.originalText = button.textContent; button.textContent = "正在登记…"; }

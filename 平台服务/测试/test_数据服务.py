@@ -129,6 +129,23 @@ class 数据服务测试(unittest.TestCase):
         self.assertEqual(self.服务.报告详情(结果["report_version_id"])["report_year"], 2026)
         self.assertTrue(self.服务.解析报告文件(结果["report_version_id"]).is_file())
 
+    def test_报告类型与来源元数据可保留(self) -> None:
+        结果 = self.服务.登记上传并创建任务(
+            self._生成最小PDF("社会责任报告.pdf"),
+            股票代码="600002",
+            报告年份=2026,
+            企业简称="测试公司乙",
+            报告标题="测试公司乙2026年度社会责任报告",
+            原始文件名="测试公司乙2026年度社会责任报告.pdf",
+            报告类型="CSR",
+            来源站点="example.org",
+            来源公告编号="notice-2026-001",
+        )
+        详情 = self.服务.报告详情(结果["report_version_id"])
+        self.assertEqual(详情["primary_report_type"], "CSR")
+        self.assertEqual(详情["source_site"], "example.org")
+        self.assertEqual(详情["source_announcement_id"], "notice-2026-001")
+
     def test_相同文件冲突元数据被拒绝(self) -> None:
         文件 = self._生成最小PDF()
         self.服务.登记上传并创建任务(

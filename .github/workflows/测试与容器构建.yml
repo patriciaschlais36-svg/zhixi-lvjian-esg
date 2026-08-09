@@ -33,7 +33,7 @@ jobs:
         run: python 算法源码/检查运行环境.py
 
       - name: 运行回归测试
-        run: python -m pytest 平台服务/测试/test_数据服务.py 算法源码/测试/test_统一入口.py -q
+        run: python -m pytest 平台服务/测试/test_合规采集器.py 平台服务/测试/test_数据服务.py 算法源码/测试/test_统一入口.py -q
 
       - name: 检查前端脚本语法
         run: node --check 前端界面/前端交互逻辑.js
@@ -70,4 +70,3 @@ jobs:
       - name: 清理容器
         if: always()
         run: docker rm --force esg-ci || true
-

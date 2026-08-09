@@ -1,0 +1,2 @@
+stock_code,company_name,report_year,report_title,report_type,source_url,source_notice_id,enabled
+600000,示例公司,2025,示例公司2025年度ESG报告,ESG,https://example.org/reports/600000-2025-esg.pdf,example-notice-001,1
