@@ -1,5 +1,5 @@
 {
-  "base_url": "http://127.0.0.1:8000",
+  "base_url": "https://zhixi-lvjian-esg.onrender.com",
   "desktop": {
     "title": "智析绿鉴 - 面向上市公司ESG报告的多模态指标抽取与可信分析系统",
     "hero_visible": true,
