@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-09T04:21:57.587440+00:00",
+  "generated_at": "2026-08-09T04:36:44.515714+00:00",
   "base_url": "https://zhixi-lvjian-esg.onrender.com",
   "scope": "公网功能与接口可用性验收，不是指标抽取准确率评估",
   "checks": [
@@ -8,7 +8,7 @@
       "passed": true,
       "details": {
         "status": 200,
-        "elapsed_ms": 515.162
+        "elapsed_ms": 552.275
       }
     },
     {
@@ -26,7 +26,7 @@
       "passed": true,
       "details": {
         "status": 200,
-        "elapsed_ms": 467.819
+        "elapsed_ms": 484.311
       }
     },
     {
@@ -34,7 +34,7 @@
       "passed": true,
       "details": {
         "status": 200,
-        "elapsed_ms": 1078.724
+        "elapsed_ms": 954.346
       }
     },
     {
@@ -42,7 +42,7 @@
       "passed": true,
       "details": {
         "status": 200,
-        "elapsed_ms": 462.151
+        "elapsed_ms": 477.795
       }
     },
     {
@@ -50,7 +50,7 @@
       "passed": true,
       "details": {
         "status": 200,
-        "elapsed_ms": 539.802
+        "elapsed_ms": 533.178
       }
     },
     {
@@ -58,7 +58,7 @@
       "passed": true,
       "details": {
         "status": 200,
-        "elapsed_ms": 495.536
+        "elapsed_ms": 492.929
       }
     },
     {
@@ -66,7 +66,7 @@
       "passed": true,
       "details": {
         "status": 200,
-        "elapsed_ms": 508.468
+        "elapsed_ms": 761.783
       }
     },
     {
@@ -74,7 +74,7 @@
       "passed": true,
       "details": {
         "status": 200,
-        "elapsed_ms": 508.946
+        "elapsed_ms": 477.388
       }
     },
     {
@@ -82,7 +82,7 @@
       "passed": true,
       "details": {
         "status": 200,
-        "elapsed_ms": 504.128
+        "elapsed_ms": 568.92
       }
     },
     {
@@ -90,7 +90,7 @@
       "passed": true,
       "details": {
         "status": 200,
-        "elapsed_ms": 842.883
+        "elapsed_ms": 1069.337
       }
     },
     {
@@ -98,7 +98,7 @@
       "passed": true,
       "details": {
         "status": 200,
-        "elapsed_ms": 807.678
+        "elapsed_ms": 711.24
       }
     },
     {

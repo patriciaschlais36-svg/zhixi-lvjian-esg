@@ -14,5 +14,15 @@
   },
   "result_count": 39,
   "evidence_count": 0,
+  "post_test_reset": {
+    "verified_at": "2026-08-09T04:36:44.3294671Z",
+    "deployed_commit": "0dd587235d7b9b24784b758a15e9201002a6998a",
+    "company_count": 1428,
+    "report_count": 3880,
+    "result_count": 1164,
+    "evidence_count": 946,
+    "succeeded_job_count": 15,
+    "status": "public_seed_restored"
+  },
   "passed": true
 }
