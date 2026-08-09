@@ -1,0 +1,18 @@
+{
+  "generated_at": "2026-08-09T04:25:21.449724+00:00",
+  "base_url": "https://zhixi-lvjian-esg.onrender.com",
+  "scope": "非评估样本的公网上传、任务执行与结果入库功能验收，不参与准确率计算",
+  "upload": {
+    "status": 202,
+    "elapsed_ms": 1189.158
+  },
+  "job": {
+    "job_id": "job_93278458cdab4f1493b75cf5e28f1c46",
+    "status": "succeeded",
+    "progress": 100,
+    "error_code": null
+  },
+  "result_count": 39,
+  "evidence_count": 0,
+  "passed": true
+}

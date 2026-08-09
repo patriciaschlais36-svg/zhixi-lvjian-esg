@@ -1,0 +1,173 @@
+{
+  "generated_at": "2026-08-09T04:21:57.587440+00:00",
+  "base_url": "https://zhixi-lvjian-esg.onrender.com",
+  "scope": "公网功能与接口可用性验收，不是指标抽取准确率评估",
+  "checks": [
+    {
+      "name": "首页可访问",
+      "passed": true,
+      "details": {
+        "status": 200,
+        "elapsed_ms": 515.162
+      }
+    },
+    {
+      "name": "基础安全响应头",
+      "passed": true,
+      "details": {
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "SAMEORIGIN",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "permissions-policy": "camera=(), microphone=(), geolocation=()"
+      }
+    },
+    {
+      "name": "健康检查",
+      "passed": true,
+      "details": {
+        "status": 200,
+        "elapsed_ms": 467.819
+      }
+    },
+    {
+      "name": "就绪检查",
+      "passed": true,
+      "details": {
+        "status": 200,
+        "elapsed_ms": 1078.724
+      }
+    },
+    {
+      "name": "平台概览",
+      "passed": true,
+      "details": {
+        "status": 200,
+        "elapsed_ms": 462.151
+      }
+    },
+    {
+      "name": "企业列表",
+      "passed": true,
+      "details": {
+        "status": 200,
+        "elapsed_ms": 539.802
+      }
+    },
+    {
+      "name": "报告列表",
+      "passed": true,
+      "details": {
+        "status": 200,
+        "elapsed_ms": 495.536
+      }
+    },
+    {
+      "name": "指标目录",
+      "passed": true,
+      "details": {
+        "status": 200,
+        "elapsed_ms": 508.468
+      }
+    },
+    {
+      "name": "任务列表",
+      "passed": true,
+      "details": {
+        "status": 200,
+        "elapsed_ms": 508.946
+      }
+    },
+    {
+      "name": "全局检索",
+      "passed": true,
+      "details": {
+        "status": 200,
+        "elapsed_ms": 504.128
+      }
+    },
+    {
+      "name": "候选结果",
+      "passed": true,
+      "details": {
+        "status": 200,
+        "elapsed_ms": 842.883
+      }
+    },
+    {
+      "name": "结果导出",
+      "passed": true,
+      "details": {
+        "status": 200,
+        "elapsed_ms": 807.678
+      }
+    },
+    {
+      "name": "公开演示数据规模",
+      "passed": true,
+      "details": {
+        "company_count": 1428,
+        "evidence_count": 946,
+        "indicator_count": 80,
+        "job_statuses": [
+          {
+            "count": 15,
+            "status": "succeeded"
+          }
+        ],
+        "report_count": 3880,
+        "report_years": [
+          {
+            "reports": 1186,
+            "year": 2023
+          },
+          {
+            "reports": 1313,
+            "year": 2024
+          },
+          {
+            "reports": 1381,
+            "year": 2025
+          }
+        ],
+        "result_count": 1164
+      }
+    },
+    {
+      "name": "结果证据链",
+      "passed": true,
+      "details": {
+        "status": 200,
+        "evidence_count": 1
+      }
+    },
+    {
+      "name": "跨年度趋势",
+      "passed": true,
+      "details": {
+        "status": 200,
+        "point_count": 2,
+        "comparable": true
+      }
+    },
+    {
+      "name": "企业对比",
+      "passed": true,
+      "details": {
+        "status": 200,
+        "comparison_basis": "用户选定企业、同报告年度、同标准化单位；未使用行业归属推断"
+      }
+    },
+    {
+      "name": "异常参数拒绝",
+      "passed": true,
+      "details": {
+        "status": 400
+      }
+    }
+  ],
+  "summary": {
+    "passed": 17,
+    "total": 17,
+    "all_passed": true
+  }
+}
