@@ -1370,6 +1370,8 @@ tbody tr.selected {
 .job-facts span:last-child { border-right: 0; }
 .job-facts b { display: block; color: var(--ink); font-size: 17px; }
 .subtle { color: var(--muted); font-size: 10px; }
+.boundary-note { margin: 0; padding: 10px 12px; border-left: 3px solid #c59b3b; background: #fffaf0; color: #5f5130; font-size: 11px; line-height: 1.65; }
+.file-unavailable { color: var(--muted); font-size: 10px; white-space: nowrap; }
 .inline-error { padding: 10px; border-left: 3px solid var(--danger); background: #fff6f6; color: var(--danger); }
 
 select[multiple] { min-height: 192px; padding: 6px; }

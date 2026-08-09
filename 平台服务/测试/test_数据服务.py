@@ -112,6 +112,7 @@ class 数据服务测试(unittest.TestCase):
         趋势 = 公开服务.趋势(可比[0][0], 可比[0][1])
         self.assertTrue(趋势["comparable"])
         self.assertGreaterEqual(len(趋势["points"]), 2)
+        self.assertFalse(公开服务.报告列表(页码=1, 每页=1)["items"][0]["file_available"])
 
     def test_可登记2026年报告并创建排队任务(self) -> None:
         结果 = self.服务.登记上传并创建任务(
@@ -313,6 +314,16 @@ class 数据服务测试(unittest.TestCase):
         self.assertEqual(企业["meta"]["total"], 1)
         搜索 = 客户端.get("/api/v1/search?q=温室气体").get_json()["data"]
         self.assertGreaterEqual(len(搜索["indicators"]), 1)
+        种子报告 = 客户端.get("/api/v1/reports?page=1&page_size=1").get_json()["data"][0]
+        self.assertFalse(种子报告["file_available"])
+        种子报告搜索 = 客户端.get("/api/v1/search?q=2025年度").get_json()["data"]["reports"]
+        self.assertGreater(len(种子报告搜索), 0)
+        self.assertTrue(all(not item["file_available"] for item in 种子报告搜索))
+        with self.服务.读连接() as 连接:
+            种子证据编号 = 连接.execute("SELECT evidence_id FROM evidence_span LIMIT 1").fetchone()[0]
+        种子证据 = 客户端.get(f"/api/v1/evidence/{种子证据编号}").get_json()["data"]
+        self.assertFalse(种子证据["pdf_available"])
+        self.assertIsNone(种子证据["pdf_url"])
 
         PDF内容 = b"%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\n%%EOF\n"
         表单 = {
@@ -329,6 +340,8 @@ class 数据服务测试(unittest.TestCase):
         self.assertEqual(第一次.status_code, 202)
         第一次数据 = 第一次.get_json()["data"]
         self.assertFalse(第一次数据["deduplication"]["job"])
+        上传详情 = 客户端.get(f"/api/v1/reports/{第一次数据['report_version_id']}").get_json()["data"]
+        self.assertTrue(上传详情["file_available"])
 
         第二次 = 客户端.post(
             "/api/v1/reports",

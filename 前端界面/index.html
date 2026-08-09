@@ -68,7 +68,7 @@
               <div class="canvas-frame"><canvas id="indicatorChart" aria-label="指标维度分布图"></canvas></div>
             </article>
             <article class="panel panel-wide">
-              <div class="panel-head"><div><span class="panel-index">A04</span><h3>最近入库报告</h3></div><span>可定位原始文件</span></div>
+              <div class="panel-head"><div><span class="panel-index">A04</span><h3>最近入库报告</h3></div><span>按挂载状态开放原始文件</span></div>
               <div id="recentReports" class="recent-reports"></div>
             </article>
           </div>
@@ -83,6 +83,7 @@
             <article class="panel upload-panel">
               <div class="panel-head"><div><span class="panel-index">B01</span><h3>报告与元数据</h3></div><span>PDF</span></div>
               <form id="uploadForm" class="upload-form">
+                <p class="boundary-note">竞赛在线演示环境的运行期上传数据可能因休眠、重启或重新部署丢失；需要长期保存时请使用本地或自有服务器的数据卷。</p>
                 <label class="dropzone" for="reportFile">
                   <input id="reportFile" name="file" type="file" accept=".pdf,application/pdf" />
                   <strong id="uploadFileName">选择或拖入ESG报告</strong><span>PDF文件</span>

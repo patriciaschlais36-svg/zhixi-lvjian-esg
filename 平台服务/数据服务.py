@@ -349,7 +349,10 @@ class 数据服务:
                 (企业编号,),
             ).fetchall()
         返回 = dict(企业)
-        返回["reports"] = [dict(x) for x in 报告]
+        报告列表 = [dict(x) for x in 报告]
+        for 项 in 报告列表:
+            项["file_available"] = self.解析报告文件(项["report_version_id"]) is not None
+        返回["reports"] = 报告列表
         return 返回
 
     def 报告列表(
@@ -387,7 +390,10 @@ class 数据服务:
                 """,
                 [*参数, 每页, (页码 - 1) * 每页],
             ).fetchall()
-        return {"items": [dict(x) for x in 行], "page": 页码, "page_size": 每页, "total": 总数}
+        项目列表 = [dict(x) for x in 行]
+        for 项 in 项目列表:
+            项["file_available"] = self.解析报告文件(项["report_version_id"]) is not None
+        return {"items": 项目列表, "page": 页码, "page_size": 每页, "total": 总数}
 
     def 报告详情(self, 报告版本编号: str) -> dict[str, Any] | None:
         with self.读连接() as 连接:
@@ -416,6 +422,7 @@ class 数据服务:
         返回 = dict(行)
         返回["quality_flags"] = json.loads(返回.pop("quality_flags_json") or "[]")
         返回["jobs"] = 任务
+        返回["file_available"] = self.解析报告文件(报告版本编号) is not None
         return 返回
 
     def 指标列表(self, 维度: str | None = None, 优先级: str | None = None) -> list[dict[str, Any]]:
@@ -934,4 +941,6 @@ class 数据服务:
                 """,
                 (模式, 数量),
             )]
+        for 项 in 报告:
+            项["file_available"] = self.解析报告文件(项["report_version_id"]) is not None
         return {"companies": 企业, "reports": 报告, "indicators": 指标, "evidence": 证据}

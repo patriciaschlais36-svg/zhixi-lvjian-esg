@@ -289,7 +289,11 @@ def 创建平台应用(
         数据 = 服务.证据详情(evidence_id)
         if not 数据:
             return 错误("EVIDENCE_NOT_FOUND", "未找到证据。", 404)
-        数据["pdf_url"] = f"/api/v1/reports/{数据['report_version_id']}/file#page={数据['page_no']}"
+        数据["pdf_available"] = 服务.解析报告文件(数据["report_version_id"]) is not None
+        数据["pdf_url"] = (
+            f"/api/v1/reports/{数据['report_version_id']}/file#page={数据['page_no']}"
+            if 数据["pdf_available"] else None
+        )
         return 成功(数据)
 
     @应用.get("/api/v1/trends")

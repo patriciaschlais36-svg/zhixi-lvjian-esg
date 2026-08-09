@@ -11,10 +11,10 @@ const STATUS_LABELS = {
   candidate_found: "已定位",
   no_candidate: "未定位",
   not_applicable: "不适用",
-  auto_high: "自动高可信",
-  auto_medium: "自动中可信",
-  auto_verified_high: "自动高可信",
-  auto_verified_medium: "自动中可信",
+  auto_high: "机器高等级",
+  auto_medium: "机器中等级",
+  auto_verified_high: "机器高等级",
+  auto_verified_medium: "机器中等级",
   needs_review: "建议复核",
   not_verified: "未自动核验",
   unreviewed: "未人工复核",
@@ -71,6 +71,11 @@ function statusClass(value) {
 
 function badge(value) {
   return `<span class="status-badge ${statusClass(value)}">${escapeHtml(statusLabel(value))}</span>`;
+}
+
+function reportFileControl(report, label = "PDF") {
+  if (!report?.file_available) return '<span class="file-unavailable">原始PDF未挂载</span>';
+  return `<a class="text-link" href="${API_ROOT}/reports/${encodeURIComponent(report.report_version_id)}/file" target="_blank" rel="noopener">${escapeHtml(label)}</a>`;
 }
 
 function renderMessage(target, title, detail = "", type = "empty") {
@@ -305,7 +310,7 @@ function renderRecentReports(reports) {
   if (!target) return;
   if (!reports.length) return renderMessage(target, "暂无报告记录");
   target.innerHTML = `<div class="table-scroll"><table><thead><tr><th>证券代码</th><th>企业</th><th>年度</th><th>报告</th><th>文件校验</th><th></th></tr></thead><tbody>${reports.map((item) => `
-    <tr><td class="mono">${escapeHtml(item.stock_code)}</td><td>${escapeHtml(item.current_short_name)}</td><td>${item.report_year}</td><td>${escapeHtml(item.canonical_title)}</td><td>${badge(item.verification_status)}</td><td><a class="text-link" href="${API_ROOT}/reports/${encodeURIComponent(item.report_version_id)}/file" target="_blank" rel="noopener">查看PDF</a></td></tr>
+    <tr><td class="mono">${escapeHtml(item.stock_code)}</td><td>${escapeHtml(item.current_short_name)}</td><td>${item.report_year}</td><td>${escapeHtml(item.canonical_title)}</td><td>${badge(item.verification_status)}</td><td>${reportFileControl(item, "查看PDF")}</td></tr>
   `).join("")}</tbody></table></div>`;
 }
 
@@ -454,7 +459,7 @@ async function loadCompanyDetail(companyId) {
   try {
     const { data } = await api(`/companies/${encodeURIComponent(companyId)}`);
     target.innerHTML = `<div class="detail-head"><div><span class="mono">${escapeHtml(data.stock_code)}</span><h3>${escapeHtml(data.current_short_name)}</h3></div><span>${data.reports.length} 个报告年度</span></div>
-      <div class="report-timeline">${data.reports.map((report) => `<article><strong>${report.report_year}</strong><div><b>${escapeHtml(report.canonical_title)}</b><span>${badge(report.verification_status)} · ${formatNumber(report.result_count)} 条结果</span></div><a href="${API_ROOT}/reports/${encodeURIComponent(report.report_version_id)}/file" target="_blank" rel="noopener">PDF</a></article>`).join("") || "<p>暂无报告。</p>"}</div>`;
+      <div class="report-timeline">${data.reports.map((report) => `<article><strong>${report.report_year}</strong><div><b>${escapeHtml(report.canonical_title)}</b><span>${badge(report.verification_status)} · ${formatNumber(report.result_count)} 条结果</span></div>${reportFileControl(report)}</article>`).join("") || "<p>暂无报告。</p>"}</div>`;
   } catch (error) {
     renderMessage(target, "企业详情载入失败", error.message, "error");
   }
@@ -524,7 +529,7 @@ async function runCompare() {
     companyIds.forEach((id) => query.append("company_id", id));
     const { data } = await api(`/compare?${query}`);
     if (!data.comparable) return renderMessage(target, "当前选择不可比较", data.reason, "empty");
-    target.innerHTML = `<div class="comparison-bars">${data.items.map((item) => `<article><div><strong>${escapeHtml(item.stock_code)} ${escapeHtml(item.current_short_name)}</strong><span>${formatNumber(item.normalized_value, 3)} ${escapeHtml(item.unit_normalized)}</span></div><meter min="0" max="${Math.max(...data.items.map((row) => Number(row.normalized_value) || 0), 1)}" value="${Number(item.normalized_value) || 0}"></meter><small>${statusLabel(item.verification_status)} · 置信度 ${formatNumber(item.confidence, 3)}</small></article>`).join("")}</div><p class="subtle">${escapeHtml(data.comparison_basis)}</p>`;
+    target.innerHTML = `<div class="comparison-bars">${data.items.map((item) => `<article><div><strong>${escapeHtml(item.stock_code)} ${escapeHtml(item.current_short_name)}</strong><span>${formatNumber(item.normalized_value, 3)} ${escapeHtml(item.unit_normalized)}</span></div><meter min="0" max="${Math.max(...data.items.map((row) => Number(row.normalized_value) || 0), 1)}" value="${Number(item.normalized_value) || 0}"></meter><small>${statusLabel(item.verification_status)} · 置信度 ${formatNumber(item.confidence, 3)}</small></article>`).join("")}</div><p class="subtle">${escapeHtml(data.comparison_basis)}</p><p class="boundary-note">机器等级与置信度用于证据质量分层，不等于人工金标正确率；结果仍需结合原文证据复核。</p>`;
   } catch (error) {
     renderMessage(target, "企业对比读取失败", error.message, "error");
   }
@@ -539,8 +544,10 @@ function renderSearchResults(data, target) {
   ];
   if (!groups.some(([, items]) => items.length)) return renderMessage(target, "没有匹配结果");
   target.innerHTML = groups.filter(([, items]) => items.length).map(([title, items, label]) => `<section class="search-group"><h3>${title}<span>${items.length}</span></h3>${items.map((item) => {
-    const attrs = item.company_id ? `data-open-company="${escapeHtml(item.company_id)}"` : item.evidence_id ? `data-open-evidence="${escapeHtml(item.evidence_id)}"` : item.report_version_id ? `data-open-report="${escapeHtml(item.report_version_id)}"` : `data-open-indicator="${escapeHtml(item.indicator_id)}"`;
-    return `<button type="button" ${attrs}><strong>${escapeHtml(label(item))}</strong>${item.source_text_preview ? `<span>${escapeHtml(item.source_text_preview)}</span>` : ""}</button>`;
+    const unavailableReport = item.report_version_id && item.file_available === false;
+    const attrs = item.company_id ? `data-open-company="${escapeHtml(item.company_id)}"` : item.evidence_id ? `data-open-evidence="${escapeHtml(item.evidence_id)}"` : item.report_version_id ? (unavailableReport ? 'disabled aria-disabled="true"' : `data-open-report="${escapeHtml(item.report_version_id)}"`) : `data-open-indicator="${escapeHtml(item.indicator_id)}"`;
+    const detail = unavailableReport ? "原始PDF未挂载" : item.source_text_preview || "";
+    return `<button type="button" ${attrs}><strong>${escapeHtml(label(item))}</strong>${detail ? `<span>${escapeHtml(detail)}</span>` : ""}</button>`;
   }).join("")}</section>`).join("");
   qsa("[data-open-company]", target).forEach((button) => button.addEventListener("click", () => { setView("companies"); loadCompanyDetail(button.dataset.openCompany); closeGlobalSearch(); }));
   qsa("[data-open-report]", target).forEach((button) => button.addEventListener("click", () => window.open(`${API_ROOT}/reports/${encodeURIComponent(button.dataset.openReport)}/file`, "_blank", "noopener")));
@@ -566,7 +573,7 @@ async function openEvidence(evidenceId) {
     const { data } = await api(`/evidence/${encodeURIComponent(evidenceId)}`);
     const target = byId("evidenceResults") || byId("searchResults");
     setView("evidence");
-    if (target) target.innerHTML = `<article class="evidence-detail"><header><div><span class="mono">${escapeHtml(data.stock_code)}</span><h3>${escapeHtml(data.current_short_name)} · ${data.report_year}</h3></div><a class="primary-link" href="${escapeHtml(data.pdf_url)}" target="_blank" rel="noopener">定位原文页</a></header><dl><div><dt>指标编号</dt><dd>${escapeHtml(data.indicator_id)}</dd></div><div><dt>物理页码</dt><dd>${formatNumber(data.page_no)}</dd></div><div><dt>报告印刷页码</dt><dd>${escapeHtml(data.printed_page_label || "—")}</dd></div><div><dt>证据类型</dt><dd>${escapeHtml(data.evidence_type)}</dd></div></dl><blockquote>${escapeHtml(data.source_text)}</blockquote><small>文本指纹：${escapeHtml(data.source_text_sha256)}</small></article>`;
+    if (target) target.innerHTML = `<article class="evidence-detail"><header><div><span class="mono">${escapeHtml(data.stock_code)}</span><h3>${escapeHtml(data.current_short_name)} · ${data.report_year}</h3></div>${data.pdf_available ? `<a class="primary-link" href="${escapeHtml(data.pdf_url)}" target="_blank" rel="noopener">定位原文页</a>` : '<span class="file-unavailable">公开种子未附原始PDF</span>'}</header><dl><div><dt>指标编号</dt><dd>${escapeHtml(data.indicator_id)}</dd></div><div><dt>物理页码</dt><dd>${formatNumber(data.page_no)}</dd></div><div><dt>报告印刷页码</dt><dd>${escapeHtml(data.printed_page_label || "—")}</dd></div><div><dt>证据类型</dt><dd>${escapeHtml(data.evidence_type)}</dd></div></dl><blockquote>${escapeHtml(data.source_text)}</blockquote><small>文本指纹：${escapeHtml(data.source_text_sha256)}</small></article>`;
     closeGlobalSearch();
   } catch (error) {
     notify(`证据读取失败：${error.message}`, "error");
