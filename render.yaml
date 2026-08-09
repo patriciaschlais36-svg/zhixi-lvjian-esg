@@ -2,6 +2,7 @@ services:
   - type: web
     name: zhixi-lvjian-esg
     runtime: docker
+    plan: free
     dockerfilePath: ./Dockerfile
     dockerContext: .
     healthCheckPath: /api/v1/health
@@ -17,8 +18,4 @@ services:
         value: 7200
       - key: ESG_PLATFORM_MAX_UPLOAD_BYTES
         value: 31457280
-    disk:
-      name: esg-runtime
-      mountPath: /data
-      sizeGB: 1
 
