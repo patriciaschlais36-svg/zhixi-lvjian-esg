@@ -2,6 +2,14 @@
 
 const API_ROOT = "/api/v1";
 const TERMINAL_STATES = new Set(["succeeded", "partial", "failed"]);
+const CHART_COLORS = {
+  primary: "#0a7c5c",
+  grid: "#e1e9e5",
+  text: "#64756e",
+  ink: "#17342b",
+  dimensions: ["#138460", "#3f78a8", "#785c9d"],
+  statuses: ["#1a9b70", "#d39a32", "#c75058", "#4d7fa7"],
+};
 const STATUS_LABELS = {
   queued: "等待处理",
   running: "分析中",
@@ -47,19 +55,19 @@ function escapeHtml(value) {
 }
 
 function formatNumber(value, digits = 0) {
-  if (value === null || value === undefined || Number.isNaN(Number(value))) return "—";
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return "暂无";
   return new Intl.NumberFormat("zh-CN", { maximumFractionDigits: digits }).format(Number(value));
 }
 
 function formatDate(value) {
-  if (!value) return "—";
+  if (!value) return "暂无";
   let date = new Date(value);
   if (Number.isNaN(date.getTime())) date = new Date(String(value).replace(" ", "T"));
   return Number.isNaN(date.getTime()) ? escapeHtml(value) : date.toLocaleString("zh-CN", { hour12: false });
 }
 
 function statusLabel(value) {
-  return STATUS_LABELS[value] || value || "—";
+  return STATUS_LABELS[value] || value || "暂无";
 }
 
 function statusClass(value) {
@@ -129,6 +137,8 @@ function setView(viewName) {
     page.classList.toggle("is-active", active);
   });
   history.replaceState(null, "", `#${viewName}`);
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
   if (viewName === "companies") loadCompanies();
   if (viewName === "indicators") renderIndicators();
   if (viewName === "pipeline") loadJobs();
@@ -152,52 +162,81 @@ function drawEmptyChart(canvas, message) {
   const ready = canvasContext(canvas);
   if (!ready) return;
   const { ctx, width, height } = ready;
-  ctx.fillStyle = "#f6f8fa";
+  ctx.fillStyle = "#f5f8f6";
   ctx.fillRect(0, 0, width, height);
-  ctx.fillStyle = "#68737d";
-  ctx.font = "14px system-ui, sans-serif";
+  ctx.strokeStyle = "#d6e1dc";
+  ctx.setLineDash([5, 6]);
+  ctx.strokeRect(18.5, 18.5, width - 37, height - 37);
+  ctx.setLineDash([]);
+  ctx.fillStyle = CHART_COLORS.text;
+  ctx.font = "13px 'Segoe UI', 'Microsoft YaHei UI', sans-serif";
   ctx.textAlign = "center";
   ctx.fillText(message, width / 2, height / 2);
 }
 
-function drawBarChart(canvas, rows, { labelKey, valueKey, color = "#087f5b" } = {}) {
+function roundedRectPath(ctx, x, y, width, height, radius) {
+  const r = Math.min(radius, width / 2, height / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + width - r, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+  ctx.lineTo(x + width, y + height - r);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+  ctx.lineTo(x + r, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function drawBarChart(canvas, rows, { labelKey, valueKey, color = CHART_COLORS.primary } = {}) {
   if (!rows?.length) return drawEmptyChart(canvas, "暂无可视化数据");
   const ready = canvasContext(canvas);
   if (!ready) return;
   const { ctx, width, height } = ready;
-  const margin = { top: 22, right: 18, bottom: 44, left: 48 };
+  const margin = { top: 34, right: 18, bottom: 44, left: 54 };
   const chartW = width - margin.left - margin.right;
   const chartH = height - margin.top - margin.bottom;
   const maxValue = Math.max(...rows.map((row) => Number(row[valueKey]) || 0), 1);
-  const gap = Math.max(5, chartW / Math.max(rows.length, 1) * 0.24);
-  const barW = Math.max(8, (chartW - gap * (rows.length + 1)) / rows.length);
+  const axisMax = maxValue * 1.14;
+  const slotW = chartW / rows.length;
+  const barW = Math.max(18, Math.min(62, slotW * 0.46));
 
-  ctx.strokeStyle = "#dbe2e7";
+  ctx.strokeStyle = CHART_COLORS.grid;
   ctx.lineWidth = 1;
   for (let i = 0; i <= 4; i += 1) {
     const y = margin.top + (chartH * i) / 4;
+    ctx.setLineDash(i === 4 ? [] : [3, 5]);
     ctx.beginPath();
     ctx.moveTo(margin.left, y);
     ctx.lineTo(width - margin.right, y);
     ctx.stroke();
-    ctx.fillStyle = "#68737d";
-    ctx.font = "11px system-ui, sans-serif";
+    ctx.setLineDash([]);
+    ctx.fillStyle = CHART_COLORS.text;
+    ctx.font = "10px 'Segoe UI', 'Microsoft YaHei UI', sans-serif";
     ctx.textAlign = "right";
-    ctx.fillText(formatNumber(maxValue * (1 - i / 4)), margin.left - 7, y + 4);
+    ctx.fillText(formatNumber(axisMax * (1 - i / 4)), margin.left - 8, y + 4);
   }
 
   rows.forEach((row, index) => {
     const value = Number(row[valueKey]) || 0;
-    const x = margin.left + gap + index * (barW + gap);
-    const barH = (value / maxValue) * chartH;
+    const x = margin.left + index * slotW + (slotW - barW) / 2;
+    const barH = (value / axisMax) * chartH;
     const y = margin.top + chartH - barH;
+    roundedRectPath(ctx, x, margin.top, barW, chartH, Math.min(9, barW / 3));
+    ctx.fillStyle = "#eef4f1";
+    ctx.fill();
+    roundedRectPath(ctx, x, y, barW, barH, Math.min(9, barW / 3));
     ctx.fillStyle = Array.isArray(color) ? color[index % color.length] : color;
-    ctx.fillRect(x, y, barW, barH);
-    ctx.fillStyle = "#263238";
-    ctx.font = "11px system-ui, sans-serif";
+    ctx.fill();
+    ctx.fillStyle = CHART_COLORS.ink;
+    ctx.font = "600 11px 'Segoe UI', 'Microsoft YaHei UI', sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText(String(row[labelKey]), x + barW / 2, height - 21);
-    if (rows.length <= 12) ctx.fillText(formatNumber(value), x + barW / 2, Math.max(14, y - 6));
+    ctx.fillText(String(row[labelKey]), x + barW / 2, height - 20);
+    if (rows.length <= 12) {
+      ctx.font = "700 12px 'Segoe UI', 'Microsoft YaHei UI', sans-serif";
+      ctx.fillText(formatNumber(value), x + barW / 2, Math.max(17, y - 9));
+    }
   });
 }
 
@@ -207,35 +246,49 @@ function drawDonutChart(canvas, rows, { labelKey, valueKey, colors } = {}) {
   if (!ready) return;
   const { ctx, width, height } = ready;
   const total = rows.reduce((sum, row) => sum + (Number(row[valueKey]) || 0), 0);
-  const radius = Math.min(width * 0.23, height * 0.33);
-  const centerX = Math.min(width * 0.35, radius + 28);
-  const centerY = height / 2;
+  const compact = width < 430;
+  const radius = Math.min(width * (compact ? 0.18 : 0.21), height * (compact ? 0.24 : 0.31));
+  const centerX = compact ? width / 2 : Math.min(width * 0.34, radius + 34);
+  const centerY = compact ? height * 0.38 : height / 2;
+  const lineWidth = Math.max(16, radius * 0.3);
+  ctx.beginPath();
+  ctx.strokeStyle = "#e7eeeb";
+  ctx.lineWidth = lineWidth;
+  ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+  ctx.stroke();
   let angle = -Math.PI / 2;
   rows.forEach((row, index) => {
     const portion = (Number(row[valueKey]) || 0) / total;
+    const sweep = portion * Math.PI * 2;
+    const gap = rows.length > 1 ? Math.min(0.035, sweep * 0.15) : 0;
     ctx.beginPath();
     ctx.strokeStyle = colors[index % colors.length];
-    ctx.lineWidth = Math.max(18, radius * 0.32);
-    ctx.arc(centerX, centerY, radius, angle, angle + portion * Math.PI * 2);
+    ctx.lineWidth = lineWidth;
+    ctx.lineCap = "round";
+    ctx.arc(centerX, centerY, radius, angle + gap, angle + sweep - gap);
     ctx.stroke();
-    angle += portion * Math.PI * 2;
+    angle += sweep;
   });
-  ctx.fillStyle = "#172126";
+  ctx.lineCap = "butt";
+  ctx.fillStyle = CHART_COLORS.ink;
   ctx.textAlign = "center";
-  ctx.font = "600 23px system-ui, sans-serif";
-  ctx.fillText(formatNumber(total), centerX, centerY + 2);
-  ctx.fillStyle = "#68737d";
-  ctx.font = "12px system-ui, sans-serif";
-  ctx.fillText("任务总量", centerX, centerY + 22);
-  const legendX = Math.max(centerX + radius + 45, width * 0.58);
+  ctx.font = "700 25px 'Segoe UI', 'Microsoft YaHei UI', sans-serif";
+  ctx.fillText(formatNumber(total), centerX, centerY + 1);
+  ctx.fillStyle = CHART_COLORS.text;
+  ctx.font = "10px 'Segoe UI', 'Microsoft YaHei UI', sans-serif";
+  ctx.fillText("任务总量", centerX, centerY + 19);
+  const legendX = Math.max(centerX + radius + 40, width * 0.56);
   rows.forEach((row, index) => {
-    const y = 42 + index * 28;
+    const x = compact ? 20 + (index % 2) * Math.max(130, width / 2 - 12) : legendX;
+    const y = compact ? height - 48 + Math.floor(index / 2) * 22 : 45 + index * 29;
     ctx.fillStyle = colors[index % colors.length];
-    ctx.fillRect(legendX, y - 9, 10, 10);
-    ctx.fillStyle = "#3a454b";
+    ctx.beginPath();
+    ctx.arc(x + 5, y - 4, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = CHART_COLORS.ink;
     ctx.textAlign = "left";
-    ctx.font = "12px system-ui, sans-serif";
-    ctx.fillText(`${statusLabel(row[labelKey])}  ${formatNumber(row[valueKey])}`, legendX + 17, y);
+    ctx.font = "11px 'Segoe UI', 'Microsoft YaHei UI', sans-serif";
+    ctx.fillText(`${statusLabel(row[labelKey])}  ${formatNumber(row[valueKey])}`, x + 17, y);
   });
 }
 
@@ -256,12 +309,14 @@ function drawLineChart(canvas, points) {
   const xAt = (index) => margin.left + (points.length === 1 ? chartW / 2 : (chartW * index) / (points.length - 1));
   const yAt = (value) => margin.top + chartH - ((value - min) / (max - min)) * chartH;
 
-  ctx.strokeStyle = "#dbe2e7";
+  ctx.strokeStyle = CHART_COLORS.grid;
   ctx.lineWidth = 1;
   for (let i = 0; i <= 4; i += 1) {
     const y = margin.top + (chartH * i) / 4;
+    ctx.setLineDash(i === 4 ? [] : [3, 5]);
     ctx.beginPath(); ctx.moveTo(margin.left, y); ctx.lineTo(width - margin.right, y); ctx.stroke();
-    ctx.fillStyle = "#68737d"; ctx.textAlign = "right"; ctx.font = "11px system-ui, sans-serif";
+    ctx.setLineDash([]);
+    ctx.fillStyle = CHART_COLORS.text; ctx.textAlign = "right"; ctx.font = "10px 'Segoe UI', 'Microsoft YaHei UI', sans-serif";
     ctx.fillText(formatNumber(max - ((max - min) * i) / 4, 2), margin.left - 8, y + 4);
   }
   ctx.beginPath();
@@ -269,12 +324,22 @@ function drawLineChart(canvas, points) {
     const x = xAt(index), y = yAt(Number(point.normalized_value));
     if (index === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
   });
-  ctx.strokeStyle = "#087f5b"; ctx.lineWidth = 3; ctx.stroke();
+  ctx.lineTo(xAt(points.length - 1), margin.top + chartH);
+  ctx.lineTo(xAt(0), margin.top + chartH);
+  ctx.closePath();
+  ctx.fillStyle = "rgba(10, 124, 92, 0.08)";
+  ctx.fill();
+  ctx.beginPath();
   points.forEach((point, index) => {
     const x = xAt(index), y = yAt(Number(point.normalized_value));
-    ctx.fillStyle = "#ffffff"; ctx.strokeStyle = "#087f5b"; ctx.lineWidth = 3;
+    if (index === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = CHART_COLORS.primary; ctx.lineWidth = 3; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.stroke();
+  points.forEach((point, index) => {
+    const x = xAt(index), y = yAt(Number(point.normalized_value));
+    ctx.fillStyle = "#fffefb"; ctx.strokeStyle = CHART_COLORS.primary; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = "#263238"; ctx.textAlign = "center"; ctx.font = "12px system-ui, sans-serif";
+    ctx.fillStyle = CHART_COLORS.ink; ctx.textAlign = "center"; ctx.font = "11px 'Segoe UI', 'Microsoft YaHei UI', sans-serif";
     ctx.fillText(String(point.report_year), x, height - 19);
     ctx.fillText(formatNumber(point.normalized_value, 2), x, y - 12);
   });
@@ -295,13 +360,22 @@ function renderSummaryKpis(summary) {
   const target = byId("summaryKpis");
   if (!target) return;
   const rows = [
-    ["企业主体", summary.company_count, "家"],
-    ["报告版本", summary.report_count, "份"],
-    ["指标目录", summary.indicator_count, "项"],
-    ["证据片段", summary.evidence_count, "条"],
+    ["企业主体", summary.company_count, "家", "上市公司数据主体"],
+    ["报告版本", summary.report_count, "份", "覆盖 2023 至 2025 年"],
+    ["指标目录", summary.indicator_count, "项", "环境、社会与治理"],
+    ["证据片段", summary.evidence_count, "条", "可回溯来源文本"],
   ];
-  target.innerHTML = rows.map(([label, value, unit]) => `
-    <article class="kpi-item"><span>${escapeHtml(label)}</span><strong>${formatNumber(value)}</strong><small>${escapeHtml(unit)}</small></article>
+  target.innerHTML = rows.map(([label, value, unit, foot]) => `
+    <article class="kpi-item"><span>${escapeHtml(label)}</span><strong>${formatNumber(value)}</strong><small>${escapeHtml(unit)}</small><span class="kpi-foot">${escapeHtml(foot)}</span></article>
+  `).join("");
+}
+
+function renderDimensionLegend(dimensions) {
+  const target = byId("dimensionLegend");
+  if (!target) return;
+  const names = { E: "环境", S: "社会", G: "治理" };
+  target.innerHTML = dimensions.map((item) => `
+    <article><span class="dimension-mark dimension-${escapeHtml(item.dimension)}">${escapeHtml(item.dimension)}</span><div><strong>${escapeHtml(names[item.dimension])}</strong><small>${formatNumber(item.count)} 项指标</small></div></article>
   `).join("");
 }
 
@@ -325,13 +399,14 @@ async function loadOverview() {
     state.indicators = indicatorResponse.data;
     renderSummaryKpis(state.summary);
     renderRecentReports(reportsResponse.data);
-    drawBarChart(byId("yearChart"), state.summary.report_years, { labelKey: "year", valueKey: "reports", color: "#087f5b" });
-    drawDonutChart(byId("jobChart"), state.summary.job_statuses, { labelKey: "status", valueKey: "count", colors: ["#2f9e75", "#f2b134", "#d9485f", "#4c78a8"] });
+    drawBarChart(byId("yearChart"), state.summary.report_years, { labelKey: "year", valueKey: "reports", color: CHART_COLORS.primary });
+    drawDonutChart(byId("jobChart"), state.summary.job_statuses, { labelKey: "status", valueKey: "count", colors: CHART_COLORS.statuses });
     const dimensions = ["E", "S", "G"].map((dimension) => ({
       dimension,
       count: state.indicators.filter((item) => item.dimension === dimension).length,
     }));
-    drawBarChart(byId("indicatorChart"), dimensions, { labelKey: "dimension", valueKey: "count", color: ["#2f9e75", "#4c78a8", "#9c6ade"] });
+    drawBarChart(byId("indicatorChart"), dimensions, { labelKey: "dimension", valueKey: "count", color: CHART_COLORS.dimensions });
+    renderDimensionLegend(dimensions);
     populateAnalysisControls();
   } catch (error) {
     renderMessage(target, "概览载入失败", error.message, "error");
@@ -356,7 +431,7 @@ function renderJobProgress(job, uploadData = null) {
         <span><b>${formatNumber(job.progress)}%</b> 完成度</span><span><b>${formatNumber(summary.result_count)}</b> 结果行</span><span><b>${formatNumber(summary.candidate_count)}</b> 候选行</span><span><b>${formatNumber(summary.review_count)}</b> 建议复核</span>
       </div>
       <p>${escapeHtml(job.stage || "等待处理")}</p>
-      ${uploadData ? `<p class="subtle">${escapeHtml(uploadModeLabel(uploadData))}；文件指纹 ${escapeHtml(uploadData.sha256?.slice(0, 16) || "—")}…</p>` : ""}
+      ${uploadData ? `<p class="subtle">${escapeHtml(uploadModeLabel(uploadData))}；文件指纹 ${escapeHtml(uploadData.sha256?.slice(0, 16) || "暂无")}…</p>` : ""}
       ${job.error_message ? `<div class="inline-error">${escapeHtml(job.error_message)}</div>` : ""}
       <div id="jobResultTable"></div>
     </section>`;
@@ -369,7 +444,7 @@ async function renderJobResults(jobId) {
     const { data } = await api(`/results?job_id=${encodeURIComponent(jobId)}`);
     if (!data.length) return renderMessage(target, "任务已结束，但没有可展示的结果行");
     target.innerHTML = `<div class="table-scroll compact-table"><table><thead><tr><th>维度</th><th>指标</th><th>候选状态</th><th>值</th><th>单位</th><th>自动核验</th><th>证据</th></tr></thead><tbody>${data.slice(0, 120).map((item) => `
-      <tr><td>${escapeHtml(item.dimension)}</td><td>${escapeHtml(item.metric_name_cn)}</td><td>${badge(item.candidate_status)}</td><td>${escapeHtml(item.raw_value ?? "—")}</td><td>${escapeHtml(item.unit_normalized || item.unit_raw || "—")}</td><td>${badge(item.verification_status)}</td><td>${formatNumber(item.evidence_count)}</td></tr>
+      <tr><td>${escapeHtml(item.dimension)}</td><td>${escapeHtml(item.metric_name_cn)}</td><td>${badge(item.candidate_status)}</td><td>${escapeHtml(item.raw_value ?? "暂无")}</td><td>${escapeHtml(item.unit_normalized || item.unit_raw || "暂无")}</td><td>${badge(item.verification_status)}</td><td>${formatNumber(item.evidence_count)}</td></tr>
     `).join("")}</tbody></table></div>`;
   } catch (error) {
     renderMessage(target, "结果读取失败", error.message, "error");
@@ -434,7 +509,7 @@ async function loadCompanies(page = state.companyPage) {
     state.companyTotal = response.meta.total;
     if (!response.data.length) return renderMessage(target, "未检索到企业", "请调整证券代码或企业简称。", "empty");
     target.innerHTML = `<div class="table-scroll"><table><thead><tr><th>证券代码</th><th>企业简称</th><th>报告数</th><th>年度范围</th><th>抽取结果</th><th></th></tr></thead><tbody>${response.data.map((item) => `
-      <tr><td class="mono">${escapeHtml(item.stock_code)}</td><td>${escapeHtml(item.current_short_name)}</td><td>${formatNumber(item.report_count)}</td><td>${item.first_year || "—"}–${item.latest_year || "—"}</td><td>${formatNumber(item.result_count)}</td><td><button class="table-action" data-company-id="${escapeHtml(item.company_id)}">详情</button></td></tr>
+      <tr><td class="mono">${escapeHtml(item.stock_code)}</td><td>${escapeHtml(item.current_short_name)}</td><td>${formatNumber(item.report_count)}</td><td>${item.first_year || "暂无"} 至 ${item.latest_year || "暂无"}</td><td>${formatNumber(item.result_count)}</td><td><button class="table-action" data-company-id="${escapeHtml(item.company_id)}">详情</button></td></tr>
     `).join("")}</tbody></table></div>`;
     qsa("[data-company-id]", target).forEach((button) => button.addEventListener("click", () => loadCompanyDetail(button.dataset.companyId)));
     renderCompanyPager();
@@ -473,7 +548,7 @@ function renderIndicators() {
   const rows = state.indicators.filter((item) => (!dimension || item.dimension === dimension) && (!priority || item.extraction_priority === priority));
   if (!rows.length) return renderMessage(target, "当前筛选下没有指标");
   target.innerHTML = `<div class="table-scroll"><table><thead><tr><th>编号</th><th>维度</th><th>指标名称</th><th>类型</th><th>优先级</th><th>标准单位</th><th>定义</th></tr></thead><tbody>${rows.map((item) => `
-    <tr><td class="mono">${escapeHtml(item.indicator_id)}</td><td><span class="dimension-mark dimension-${escapeHtml(item.dimension)}">${escapeHtml(item.dimension)}</span></td><td>${escapeHtml(item.metric_name_cn)}</td><td>${item.metric_type === "quantitative" ? "定量" : "定性"}</td><td>${escapeHtml(item.extraction_priority)}</td><td>${escapeHtml(item.unit_normalized || "—")}</td><td class="definition-cell">${escapeHtml(item.definition || "—")}</td></tr>
+    <tr><td class="mono">${escapeHtml(item.indicator_id)}</td><td><span class="dimension-mark dimension-${escapeHtml(item.dimension)}">${escapeHtml(item.dimension)}</span></td><td>${escapeHtml(item.metric_name_cn)}</td><td>${item.metric_type === "quantitative" ? "定量" : "定性"}</td><td>${escapeHtml(item.extraction_priority)}</td><td>${escapeHtml(item.unit_normalized || "暂无")}</td><td class="definition-cell">${escapeHtml(item.definition || "暂无")}</td></tr>
   `).join("")}</tbody></table></div>`;
 }
 
@@ -511,7 +586,7 @@ async function loadTrend() {
   try {
     const { data } = await api(`/trends?company_id=${encodeURIComponent(companyId)}&indicator_id=${encodeURIComponent(indicatorId)}`);
     drawLineChart(byId("trendChart"), data.points);
-    if (meta) meta.textContent = data.comparable ? `${data.points.length} 个年度，单位：${data.points[0]?.unit_normalized || "—"}` : data.reason;
+    if (meta) meta.textContent = data.comparable ? `${data.points.length} 个年度，单位：${data.points[0]?.unit_normalized || "暂无"}` : data.reason;
   } catch (error) {
     drawEmptyChart(byId("trendChart"), "趋势数据读取失败");
     if (meta) meta.textContent = error.message;
@@ -573,7 +648,7 @@ async function openEvidence(evidenceId) {
     const { data } = await api(`/evidence/${encodeURIComponent(evidenceId)}`);
     const target = byId("evidenceResults") || byId("searchResults");
     setView("evidence");
-    if (target) target.innerHTML = `<article class="evidence-detail"><header><div><span class="mono">${escapeHtml(data.stock_code)}</span><h3>${escapeHtml(data.current_short_name)} · ${data.report_year}</h3></div>${data.pdf_available ? `<a class="primary-link" href="${escapeHtml(data.pdf_url)}" target="_blank" rel="noopener">定位原文页</a>` : '<span class="file-unavailable">公开种子未附原始PDF</span>'}</header><dl><div><dt>指标编号</dt><dd>${escapeHtml(data.indicator_id)}</dd></div><div><dt>物理页码</dt><dd>${formatNumber(data.page_no)}</dd></div><div><dt>报告印刷页码</dt><dd>${escapeHtml(data.printed_page_label || "—")}</dd></div><div><dt>证据类型</dt><dd>${escapeHtml(data.evidence_type)}</dd></div></dl><blockquote>${escapeHtml(data.source_text)}</blockquote><small>文本指纹：${escapeHtml(data.source_text_sha256)}</small></article>`;
+    if (target) target.innerHTML = `<article class="evidence-detail"><header><div><span class="mono">${escapeHtml(data.stock_code)}</span><h3>${escapeHtml(data.current_short_name)} · ${data.report_year}</h3></div>${data.pdf_available ? `<a class="primary-link" href="${escapeHtml(data.pdf_url)}" target="_blank" rel="noopener">定位原文页</a>` : '<span class="file-unavailable">公开种子未附原始PDF</span>'}</header><dl><div><dt>指标编号</dt><dd>${escapeHtml(data.indicator_id)}</dd></div><div><dt>物理页码</dt><dd>${formatNumber(data.page_no)}</dd></div><div><dt>报告印刷页码</dt><dd>${escapeHtml(data.printed_page_label || "暂无")}</dd></div><div><dt>证据类型</dt><dd>${escapeHtml(data.evidence_type)}</dd></div></dl><blockquote>${escapeHtml(data.source_text)}</blockquote><small>文本指纹：${escapeHtml(data.source_text_sha256)}</small></article>`;
     closeGlobalSearch();
   } catch (error) {
     notify(`证据读取失败：${error.message}`, "error");
@@ -652,10 +727,10 @@ function bindEvents() {
     window.clearTimeout(window._chartResizeTimer);
     window._chartResizeTimer = window.setTimeout(() => {
       if (state.summary) {
-        drawBarChart(byId("yearChart"), state.summary.report_years, { labelKey: "year", valueKey: "reports", color: "#087f5b" });
-        drawDonutChart(byId("jobChart"), state.summary.job_statuses, { labelKey: "status", valueKey: "count", colors: ["#2f9e75", "#f2b134", "#d9485f", "#4c78a8"] });
+        drawBarChart(byId("yearChart"), state.summary.report_years, { labelKey: "year", valueKey: "reports", color: CHART_COLORS.primary });
+        drawDonutChart(byId("jobChart"), state.summary.job_statuses, { labelKey: "status", valueKey: "count", colors: CHART_COLORS.statuses });
         const dimensions = ["E", "S", "G"].map((dimension) => ({ dimension, count: state.indicators.filter((item) => item.dimension === dimension).length }));
-        drawBarChart(byId("indicatorChart"), dimensions, { labelKey: "dimension", valueKey: "count", color: ["#2f9e75", "#4c78a8", "#9c6ade"] });
+        drawBarChart(byId("indicatorChart"), dimensions, { labelKey: "dimension", valueKey: "count", color: CHART_COLORS.dimensions });
       }
       loadTrend();
     }, 180);

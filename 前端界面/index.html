@@ -3,8 +3,9 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>智析绿鉴—面向上市公司ESG报告的多模态指标抽取与可信分析系统</title>
+    <title>智析绿鉴 - 面向上市公司ESG报告的多模态指标抽取与可信分析系统</title>
     <meta name="description" content="上市公司ESG报告指标抽取、跨期比较、趋势分析与证据核验工作台" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d372d'/%3E%3Ctext x='32' y='43' text-anchor='middle' font-size='32' font-family='sans-serif' font-weight='700' fill='%23b8f0d6'%3E%E7%BB%BF%3C/text%3E%3C/svg%3E" />
     <link rel="stylesheet" href="./页面样式.css" />
   </head>
   <body>
@@ -12,7 +13,7 @@
       <aside class="sidebar" aria-label="主导航">
         <div class="brand">
           <span class="brand-mark" aria-hidden="true">绿鉴</span>
-          <div class="brand-copy"><strong>智析绿鉴</strong><small>ESG可信分析系统</small></div>
+          <div class="brand-copy"><strong>智析绿鉴</strong><small>ESG 可信分析系统</small></div>
         </div>
         <nav class="nav-list" aria-label="功能视图">
           <button class="nav-item active is-active" data-view="overview" type="button">分析总览</button>
@@ -23,6 +24,11 @@
           <button class="nav-item" data-view="evidence" type="button">证据核验</button>
           <button class="nav-item" data-view="pipeline" type="button">任务管理</button>
         </nav>
+        <div class="sidebar-context" aria-label="环境说明">
+          <span>ONLINE DEMO</span>
+          <strong>竞赛在线演示环境</strong>
+          <p>真实接口驱动 · 运行期数据不承诺持久化</p>
+        </div>
         <div class="service-state" id="serviceStatus" aria-live="polite">
           <span class="service-dot"></span><span>正在检查服务</span>
         </div>
@@ -31,9 +37,9 @@
       <main class="workspace">
         <header class="topbar">
           <div class="top-title">
-            <span class="section-code">上市公司ESG数据工作台</span>
-            <h1>智析绿鉴</h1>
-            <p>多模态指标抽取与可信分析系统</p>
+            <span class="section-code">上市公司 ESG 数据工作台</span>
+            <h1>让每一项披露都能回到证据</h1>
+            <p>多模态指标抽取、跨期比较与可信核验</p>
           </div>
           <div class="top-actions">
             <div class="search-wrap global-search">
@@ -49,26 +55,38 @@
         </header>
 
         <section class="view active is-active" id="overview" data-page="overview" aria-labelledby="overviewTitle">
-          <div class="section-head">
-            <div><span class="section-code">01 · 数据概览</span><h2 id="overviewTitle">分析总览</h2></div>
-            <div class="scope-meta"><span>文档解析</span><span>候选检索</span><span>结构化抽取</span><span>证据核验</span></div>
+          <div class="overview-hero">
+            <div class="overview-hero-copy">
+              <span class="section-code">可信数据底座</span>
+              <h2 id="overviewTitle">从报告原文，到可追溯的 ESG 指标</h2>
+              <p>以证据片段连接报告、指标和企业年度，支持从数据概览逐层下钻至原文核验。</p>
+              <div class="hero-flow" aria-label="系统分析流程">
+                <span>报告解析</span><span>候选检索</span><span>结构化抽取</span><span>证据核验</span>
+              </div>
+            </div>
+            <div class="hero-stamp">
+              <span>ANALYSIS WINDOW</span>
+              <strong>2023 至 2025</strong>
+              <small>三年对比分析窗口</small>
+            </div>
           </div>
           <div class="kpi-section" id="summaryKpis" aria-label="核心指标"></div>
           <div class="dashboard-grid">
-            <article class="panel panel-wide">
-              <div class="panel-head"><div><span class="panel-index">A01</span><h3>报告年度分布</h3></div><span>实际入库报告</span></div>
+            <article class="panel panel-feature">
+              <div class="panel-head"><div><span class="panel-index">年度覆盖</span><h3>报告年度分布</h3></div><span>实际入库报告</span></div>
               <div class="canvas-frame canvas-wide"><canvas id="yearChart" aria-label="报告年度分布图"></canvas></div>
             </article>
-            <article class="panel">
-              <div class="panel-head"><div><span class="panel-index">A02</span><h3>任务状态分布</h3></div><span>在线处理任务</span></div>
+            <article class="panel panel-compact">
+              <div class="panel-head"><div><span class="panel-index">任务运行</span><h3>任务状态分布</h3></div><span>在线处理任务</span></div>
               <div class="canvas-frame"><canvas id="jobChart" aria-label="任务状态分布图"></canvas></div>
             </article>
-            <article class="panel">
-              <div class="panel-head"><div><span class="panel-index">A03</span><h3>指标维度分布</h3></div><span>环境、社会与治理</span></div>
+            <article class="panel panel-compact">
+              <div class="panel-head"><div><span class="panel-index">指标结构</span><h3>ESG 维度分布</h3></div><span>环境、社会与治理</span></div>
               <div class="canvas-frame"><canvas id="indicatorChart" aria-label="指标维度分布图"></canvas></div>
+              <div class="dimension-legend" id="dimensionLegend" aria-label="指标维度说明"></div>
             </article>
-            <article class="panel panel-wide">
-              <div class="panel-head"><div><span class="panel-index">A04</span><h3>最近入库报告</h3></div><span>按挂载状态开放原始文件</span></div>
+            <article class="panel panel-feature">
+              <div class="panel-head"><div><span class="panel-index">数据台账</span><h3>最近入库报告</h3></div><span>按挂载状态开放原始文件</span></div>
               <div id="recentReports" class="recent-reports"></div>
             </article>
           </div>
@@ -76,12 +94,12 @@
 
         <section class="view" id="upload" data-page="upload" aria-labelledby="uploadTitle" hidden>
           <div class="section-head">
-            <div><span class="section-code">02 · 报告接入</span><h2 id="uploadTitle">报告解析</h2></div>
+            <div><span class="section-code">报告接入</span><h2 id="uploadTitle">报告解析</h2></div>
             <span class="section-status" id="uploadModeLabel">等待文件</span>
           </div>
           <div class="upload-layout">
             <article class="panel upload-panel">
-              <div class="panel-head"><div><span class="panel-index">B01</span><h3>报告与元数据</h3></div><span>PDF</span></div>
+              <div class="panel-head"><div><span class="panel-index">输入</span><h3>报告与元数据</h3></div><span>PDF</span></div>
               <form id="uploadForm" class="upload-form">
                 <p class="boundary-note">竞赛在线演示环境的运行期上传数据可能因休眠、重启或重新部署丢失；需要长期保存时请使用本地或自有服务器的数据卷。</p>
                 <label class="dropzone" for="reportFile">
@@ -99,7 +117,7 @@
               </form>
             </article>
             <article class="panel upload-result-panel">
-              <div class="panel-head"><div><span class="panel-index">B02</span><h3>真实链路结果</h3></div><span>任务、结果与证据</span></div>
+              <div class="panel-head"><div><span class="panel-index">输出</span><h3>真实链路结果</h3></div><span>任务、结果与证据</span></div>
               <div id="uploadResult" class="result-region" aria-live="polite"><div class="empty-state">暂无分析任务</div></div>
             </article>
           </div>
@@ -107,12 +125,12 @@
 
         <section class="view" id="companies" data-page="companies" aria-labelledby="companiesTitle" hidden>
           <div class="section-head">
-            <div><span class="section-code">03 · 企业档案</span><h2 id="companiesTitle">企业数据</h2></div>
+            <div><span class="section-code">企业档案</span><h2 id="companiesTitle">企业数据</h2></div>
             <label class="field compact-field" for="companySearch"><span>企业检索</span><input id="companySearch" type="search" placeholder="名称或股票代码" /></label>
           </div>
           <div class="master-detail">
             <article class="panel table-panel">
-              <div class="panel-head"><div><span class="panel-index">C01</span><h3>企业列表</h3></div><span>按证券代码排序</span></div>
+              <div class="panel-head"><div><span class="panel-index">数据主体</span><h3>企业列表</h3></div><span>按证券代码排序</span></div>
               <div id="companyTable"></div>
               <div class="pager" id="companyPager" aria-label="企业列表分页"></div>
             </article>
@@ -122,20 +140,20 @@
 
         <section class="view" id="indicators" data-page="indicators" aria-labelledby="indicatorsTitle" hidden>
           <div class="section-head">
-            <div><span class="section-code">04 · 指标字典</span><h2 id="indicatorsTitle">指标查询</h2></div>
+            <div><span class="section-code">指标字典</span><h2 id="indicatorsTitle">指标查询</h2></div>
             <div class="filter-bar">
               <label class="field compact-field"><span>ESG维度</span><select id="indicatorDimension"><option value="">全部</option><option value="E">环境</option><option value="S">社会</option><option value="G">治理</option></select></label>
               <label class="field compact-field"><span>抽取优先级</span><select id="indicatorPriority"><option value="">全部</option><option value="P0">P0</option><option value="P1">P1</option><option value="P2">P2</option></select></label>
             </div>
           </div>
-          <article class="panel table-panel"><div class="panel-head"><div><span class="panel-index">D01</span><h3>全国赛80项指标体系</h3></div><span>定量与定性指标</span></div><div id="indicatorTable"></div></article>
+          <article class="panel table-panel"><div class="panel-head"><div><span class="panel-index">指标目录</span><h3>全国赛 80 项指标体系</h3></div><span>定量与定性指标</span></div><div id="indicatorTable"></div></article>
         </section>
 
         <section class="view" id="analysis" data-page="analysis" aria-labelledby="analysisTitle" hidden>
-          <div class="section-head"><div><span class="section-code">05 · 多期分析</span><h2 id="analysisTitle">对比与趋势分析</h2></div></div>
+          <div class="section-head"><div><span class="section-code">多期分析</span><h2 id="analysisTitle">对比与趋势分析</h2></div></div>
           <div class="analysis-grid">
             <article class="panel panel-wide">
-              <div class="panel-head"><div><span class="panel-index">E01</span><h3>同一企业跨年趋势</h3></div><span id="trendMeta">等待选择</span></div>
+              <div class="panel-head"><div><span class="panel-index">时间序列</span><h3>同一企业跨年趋势</h3></div><span id="trendMeta">等待选择</span></div>
               <div class="analysis-controls">
                 <label class="field compact-field"><span>企业</span><select id="analysisCompany"><option value="">选择企业</option></select></label>
                 <label class="field compact-field"><span>定量指标</span><select id="analysisIndicator"><option value="">选择指标</option></select></label>
@@ -143,7 +161,7 @@
               <div class="canvas-frame canvas-wide"><canvas id="trendChart" aria-label="企业指标跨年趋势图"></canvas></div>
             </article>
             <article class="panel">
-              <div class="panel-head"><div><span class="panel-index">E02</span><h3>企业对比设置</h3></div><span>用户选定企业</span></div>
+              <div class="panel-head"><div><span class="panel-index">横向比较</span><h3>企业对比设置</h3></div><span>用户选定企业</span></div>
               <div class="compare-controls">
                 <label class="field"><span>报告年度</span><select id="analysisYear"><option value="2025">2025</option><option value="2024">2024</option><option value="2023">2023</option></select></label>
                 <label class="field"><span>企业（多选）</span><select id="compareCompanies" multiple size="8"></select></label>
@@ -156,7 +174,7 @@
 
         <section class="view" id="evidence" data-page="evidence" aria-labelledby="evidenceTitle" hidden>
           <div class="section-head">
-            <div><span class="section-code">06 · 来源追溯</span><h2 id="evidenceTitle">证据核验</h2></div>
+            <div><span class="section-code">来源追溯</span><h2 id="evidenceTitle">证据核验</h2></div>
             <div class="filter-bar"><label class="field compact-field"><span>证据检索</span><input id="evidenceSearch" type="search" placeholder="指标或证据原文" /></label><button class="secondary-btn" id="evidenceSearchBtn" type="button">检索</button></div>
           </div>
           <article class="panel" id="evidenceResults"></article>
@@ -164,11 +182,11 @@
 
         <section class="view" id="pipeline" data-page="pipeline" aria-labelledby="pipelineTitle" hidden>
           <div class="section-head">
-            <div><span class="section-code">07 · 运行监测</span><h2 id="pipelineTitle">任务与数据管理</h2></div>
+            <div><span class="section-code">运行监测</span><h2 id="pipelineTitle">任务与数据管理</h2></div>
             <button class="secondary-btn" id="refreshJobs" type="button">刷新任务</button>
           </div>
           <article class="panel table-panel">
-            <div class="panel-head"><div><span class="panel-index">G01</span><h3>真实抽取任务</h3></div><span>最近100条</span></div>
+            <div class="panel-head"><div><span class="panel-index">任务队列</span><h3>真实抽取任务</h3></div><span>最近 100 条</span></div>
             <div id="jobTable"></div>
           </article>
         </section>

@@ -1,0 +1,302 @@
+{
+  "base_url": "http://127.0.0.1:8000",
+  "desktop": {
+    "title": "智析绿鉴 - 面向上市公司ESG报告的多模态指标抽取与可信分析系统",
+    "hero_visible": true,
+    "hero_heading": "从报告原文，到可追溯的 ESG 指标",
+    "kpi_count": 4,
+    "panel_count": 4,
+    "service_status": "服务就绪\n3,880 份报告",
+    "canvases": {
+      "yearChart": {
+        "width": 593,
+        "height": 220,
+        "colored": 29242,
+        "nonblank": true
+      },
+      "jobChart": {
+        "width": 407,
+        "height": 254,
+        "colored": 8375,
+        "nonblank": true
+      },
+      "indicatorChart": {
+        "width": 407,
+        "height": 254,
+        "colored": 28960,
+        "nonblank": true
+      }
+    },
+    "document_overflow": {
+      "viewport": 1440,
+      "scroll": 1440
+    },
+    "trend_meta": "3 个年度，单位：m3",
+    "trend_canvas": {
+      "width": 1058,
+      "height": 353,
+      "colored": 128878,
+      "nonblank": true
+    },
+    "comparison_items": 2,
+    "upload_controls": 7
+  },
+  "mobile": {
+    "hero_visible": true,
+    "kpi_count": 4,
+    "document_overflow": {
+      "viewport": 390,
+      "scroll": 390
+    },
+    "overflow_elements": [
+      {
+        "tag": "BUTTON",
+        "id": "",
+        "cls": "nav-item",
+        "left": 351,
+        "right": 456
+      },
+      {
+        "tag": "BUTTON",
+        "id": "",
+        "cls": "nav-item",
+        "left": 462,
+        "right": 567
+      },
+      {
+        "tag": "BUTTON",
+        "id": "",
+        "cls": "nav-item",
+        "left": 573,
+        "right": 678
+      },
+      {
+        "tag": "BUTTON",
+        "id": "",
+        "cls": "nav-item",
+        "left": 684,
+        "right": 789
+      },
+      {
+        "tag": "TABLE",
+        "id": "",
+        "cls": "",
+        "left": 30,
+        "right": 750
+      },
+      {
+        "tag": "THEAD",
+        "id": "",
+        "cls": "",
+        "left": 30,
+        "right": 750
+      },
+      {
+        "tag": "TR",
+        "id": "",
+        "cls": "",
+        "left": 30,
+        "right": 750
+      },
+      {
+        "tag": "TH",
+        "id": "",
+        "cls": "",
+        "left": 209.15625,
+        "right": 552.484375
+      },
+      {
+        "tag": "TH",
+        "id": "",
+        "cls": "",
+        "left": 552.484375,
+        "right": 660.484375
+      },
+      {
+        "tag": "TH",
+        "id": "",
+        "cls": "",
+        "left": 660.484375,
+        "right": 750
+      },
+      {
+        "tag": "TBODY",
+        "id": "",
+        "cls": "",
+        "left": 30,
+        "right": 750
+      },
+      {
+        "tag": "TR",
+        "id": "",
+        "cls": "",
+        "left": 30,
+        "right": 750
+      },
+      {
+        "tag": "TD",
+        "id": "",
+        "cls": "",
+        "left": 209.15625,
+        "right": 552.484375
+      },
+      {
+        "tag": "TD",
+        "id": "",
+        "cls": "",
+        "left": 552.484375,
+        "right": 660.484375
+      },
+      {
+        "tag": "SPAN",
+        "id": "",
+        "cls": "status-badge is-success",
+        "left": 563.484375,
+        "right": 649.484375
+      },
+      {
+        "tag": "TD",
+        "id": "",
+        "cls": "",
+        "left": 660.484375,
+        "right": 750
+      },
+      {
+        "tag": "SPAN",
+        "id": "",
+        "cls": "file-unavailable",
+        "left": 671.484375,
+        "right": 738.984375
+      },
+      {
+        "tag": "TR",
+        "id": "",
+        "cls": "",
+        "left": 30,
+        "right": 750
+      },
+      {
+        "tag": "TD",
+        "id": "",
+        "cls": "",
+        "left": 209.15625,
+        "right": 552.484375
+      },
+      {
+        "tag": "TD",
+        "id": "",
+        "cls": "",
+        "left": 552.484375,
+        "right": 660.484375
+      },
+      {
+        "tag": "SPAN",
+        "id": "",
+        "cls": "status-badge is-success",
+        "left": 563.484375,
+        "right": 649.484375
+      },
+      {
+        "tag": "TD",
+        "id": "",
+        "cls": "",
+        "left": 660.484375,
+        "right": 750
+      },
+      {
+        "tag": "SPAN",
+        "id": "",
+        "cls": "file-unavailable",
+        "left": 671.484375,
+        "right": 738.984375
+      },
+      {
+        "tag": "TR",
+        "id": "",
+        "cls": "",
+        "left": 30,
+        "right": 750
+      },
+      {
+        "tag": "TD",
+        "id": "",
+        "cls": "",
+        "left": 209.15625,
+        "right": 552.484375
+      },
+      {
+        "tag": "TD",
+        "id": "",
+        "cls": "",
+        "left": 552.484375,
+        "right": 660.484375
+      },
+      {
+        "tag": "SPAN",
+        "id": "",
+        "cls": "status-badge is-success",
+        "left": 563.484375,
+        "right": 649.484375
+      },
+      {
+        "tag": "TD",
+        "id": "",
+        "cls": "",
+        "left": 660.484375,
+        "right": 750
+      },
+      {
+        "tag": "SPAN",
+        "id": "",
+        "cls": "file-unavailable",
+        "left": 671.484375,
+        "right": 738.984375
+      },
+      {
+        "tag": "TR",
+        "id": "",
+        "cls": "",
+        "left": 30,
+        "right": 750
+      }
+    ]
+  },
+  "views": {
+    "upload": {
+      "visible": true,
+      "active_nav": "page"
+    },
+    "companies": {
+      "visible": true,
+      "active_nav": "page"
+    },
+    "indicators": {
+      "visible": true,
+      "active_nav": "page"
+    },
+    "analysis": {
+      "visible": true,
+      "active_nav": "page"
+    },
+    "evidence": {
+      "visible": true,
+      "active_nav": "page"
+    },
+    "pipeline": {
+      "visible": true,
+      "active_nav": "page"
+    },
+    "overview": {
+      "visible": true,
+      "active_nav": "page"
+    }
+  },
+  "screenshots": {
+    "desktop_overview": "测试证据\\界面视觉升级验收\\桌面端_新版分析总览.png",
+    "desktop_overview_full": "测试证据\\界面视觉升级验收\\桌面端_新版分析总览_全页审计.png",
+    "desktop_analysis": "测试证据\\界面视觉升级验收\\桌面端_新版趋势与企业对比.png",
+    "desktop_upload": "测试证据\\界面视觉升级验收\\桌面端_新版报告解析.png",
+    "mobile_overview": "测试证据\\界面视觉升级验收\\移动端_新版分析总览.png"
+  },
+  "console_errors": []
+}
