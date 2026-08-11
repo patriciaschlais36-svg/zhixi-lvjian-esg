@@ -112,7 +112,7 @@
             <article class="panel upload-panel">
               <div class="panel-head"><div><span class="panel-index">输入</span><h3>报告与元数据</h3></div><span>PDF</span></div>
               <form id="uploadForm" class="upload-form">
-                <p class="boundary-note">竞赛在线演示环境的运行期上传数据可能因休眠、重启或重新部署丢失；需要长期保存时请使用本地或自有服务器的数据卷。</p>
+                <p class="boundary-note"><strong>竞赛在线演示环境，运行期上传数据不持久化。</strong>服务休眠、重启或重新部署后数据可能丢失；需要长期保存时请使用本地或自有服务器的数据卷。</p>
                 <label class="dropzone" for="reportFile">
                   <input id="reportFile" name="file" type="file" accept=".pdf,application/pdf" />
                   <span class="dropzone-mark" aria-hidden="true">PDF</span>
@@ -198,7 +198,7 @@
                 <button class="primary-btn" id="compareBtn" type="button">生成对比</button>
               </div>
             </article>
-            <article class="panel" id="compareResult"><div class="empty-state">请选择同年度、同指标的企业</div></article>
+            <article class="panel" id="compareResult"><p class="boundary-note"><strong>仅对比您选择的企业，非行业排名。</strong></p><div class="empty-state">请选择同年度、同指标的企业</div></article>
           </div>
         </section>
 

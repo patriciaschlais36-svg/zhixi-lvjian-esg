@@ -89,6 +89,7 @@ def main() -> None:
         结果["desktop"]["trend_meta"] = 页面.locator("#trendMeta").inner_text()
         结果["desktop"]["trend_canvas"] = 画布状态(页面, "trendChart")
         结果["desktop"]["comparison_items"] = 页面.locator("#compareResult .comparison-bars article").count()
+        结果["desktop"]["comparison_boundary"] = 页面.locator("#compareResult .boundary-note").inner_text()
         页面.evaluate("window.scrollTo(0, 0)")
         分析截图 = 证据目录 / "桌面端_新版趋势与企业对比.png"
         页面.screenshot(path=str(分析截图), full_page=True)
@@ -97,6 +98,7 @@ def main() -> None:
         页面.locator('[data-view="upload"]').click()
         页面.wait_for_timeout(300)
         结果["desktop"]["upload_controls"] = 页面.locator("#uploadForm input, #uploadForm select, #uploadForm button").count()
+        结果["desktop"]["upload_boundary"] = 页面.locator("#uploadForm .boundary-note").inner_text()
         上传截图 = 证据目录 / "桌面端_新版报告解析.png"
         页面.screenshot(path=str(上传截图), full_page=True)
         结果["screenshots"]["desktop_upload"] = str(上传截图.relative_to(项目根目录))
@@ -140,7 +142,9 @@ def main() -> None:
     assert "3 个年度" in 结果["desktop"]["trend_meta"]
     assert 结果["desktop"]["trend_canvas"]["nonblank"] is True
     assert 结果["desktop"]["comparison_items"] == 2
+    assert "非行业排名" in 结果["desktop"]["comparison_boundary"]
     assert 结果["desktop"]["upload_controls"] >= 7
+    assert "运行期上传数据不持久化" in 结果["desktop"]["upload_boundary"]
     assert 结果["desktop"]["document_overflow"]["scroll"] <= 结果["desktop"]["document_overflow"]["viewport"] + 2
     assert 结果["mobile"]["hero_visible"] is True
     assert 结果["mobile"]["kpi_count"] == 4

@@ -686,7 +686,7 @@ async function runCompare() {
     const { data } = await api(`/compare?${query}`);
     if (!data.comparable) return renderMessage(target, "当前选择不可比较", data.reason, "empty");
     const maxValue = Math.max(...data.items.map((row) => Number(row.normalized_value) || 0), 1);
-    target.innerHTML = `<div class="comparison-bars">${data.items.map((item) => `<article><div><strong>${escapeHtml(item.stock_code)} ${escapeHtml(item.current_short_name)}</strong><span>${formatNumber(item.normalized_value, 3)} ${escapeHtml(item.unit_normalized)}</span></div><div class="comparison-scale" aria-hidden="true"><i style="width:${Math.max(2, (Number(item.normalized_value) || 0) / maxValue * 100)}%"></i></div><small>${statusLabel(item.verification_status)} / 置信度 ${formatNumber(item.confidence, 3)}</small></article>`).join("")}</div><p class="subtle">${escapeHtml(data.comparison_basis)}</p><p class="boundary-note">机器等级与置信度用于证据质量分层，所有结果均可继续回到原文核验。</p>`;
+    target.innerHTML = `<p class="boundary-note"><strong>仅对比您选择的企业，非行业排名。</strong>机器等级与置信度用于证据质量分层，所有结果均可继续回到原文核验。</p><div class="comparison-bars">${data.items.map((item) => `<article><div><strong>${escapeHtml(item.stock_code)} ${escapeHtml(item.current_short_name)}</strong><span>${formatNumber(item.normalized_value, 3)} ${escapeHtml(item.unit_normalized)}</span></div><div class="comparison-scale" aria-hidden="true"><i style="width:${Math.max(2, (Number(item.normalized_value) || 0) / maxValue * 100)}%"></i></div><small>${statusLabel(item.verification_status)} / 置信度 ${formatNumber(item.confidence, 3)}</small></article>`).join("")}</div><p class="subtle">${escapeHtml(data.comparison_basis)}</p>`;
   } catch (error) {
     renderMessage(target, "企业对比读取失败", error.message, "error");
   }

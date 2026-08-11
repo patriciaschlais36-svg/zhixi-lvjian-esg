@@ -3008,6 +3008,12 @@ body {
   background: #f8f4e9;
   color: #66542f;
 }
+.boundary-note strong {
+  display: block;
+  margin-bottom: 2px;
+  color: #4d3a16;
+  font-weight: 800;
+}
 
 input,
 select {

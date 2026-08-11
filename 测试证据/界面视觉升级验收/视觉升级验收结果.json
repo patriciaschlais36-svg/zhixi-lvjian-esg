@@ -1,5 +1,5 @@
 {
-  "base_url": "http://127.0.0.1:8777",
+  "base_url": "http://127.0.0.1:8000",
   "desktop": {
     "title": "智析绿鉴 - 面向上市公司ESG报告的多模态指标抽取与可信分析系统",
     "hero_visible": true,
@@ -39,7 +39,9 @@
       "nonblank": true
     },
     "comparison_items": 2,
-    "upload_controls": 7
+    "comparison_boundary": "仅对比您选择的企业，非行业排名。\n机器等级与置信度用于证据质量分层，所有结果均可继续回到原文核验。",
+    "upload_controls": 7,
+    "upload_boundary": "竞赛在线演示环境，运行期上传数据不持久化。\n服务休眠、重启或重新部署后数据可能丢失；需要长期保存时请使用本地或自有服务器的数据卷。"
   },
   "mobile": {
     "hero_visible": true,
