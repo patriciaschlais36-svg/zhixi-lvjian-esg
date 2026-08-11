@@ -3,12 +3,12 @@
 const API_ROOT = "/api/v1";
 const TERMINAL_STATES = new Set(["succeeded", "partial", "failed"]);
 const CHART_COLORS = {
-  primary: "#0a7c5c",
-  grid: "#e1e9e5",
-  text: "#64756e",
-  ink: "#17342b",
-  dimensions: ["#138460", "#3f78a8", "#785c9d"],
-  statuses: ["#1a9b70", "#d39a32", "#c75058", "#4d7fa7"],
+  primary: "#087f5b",
+  grid: "#dce6e1",
+  text: "#66756f",
+  ink: "#102f26",
+  dimensions: ["#087f5b", "#28739a", "#8a6231"],
+  statuses: ["#087f5b", "#c28a30", "#bd4e55", "#477d94"],
 };
 const STATUS_LABELS = {
   queued: "等待处理",
@@ -223,9 +223,6 @@ function drawBarChart(canvas, rows, { labelKey, valueKey, color = CHART_COLORS.p
     const x = margin.left + index * slotW + (slotW - barW) / 2;
     const barH = (value / axisMax) * chartH;
     const y = margin.top + chartH - barH;
-    roundedRectPath(ctx, x, margin.top, barW, chartH, Math.min(9, barW / 3));
-    ctx.fillStyle = "#eef4f1";
-    ctx.fill();
     roundedRectPath(ctx, x, y, barW, barH, Math.min(9, barW / 3));
     ctx.fillStyle = Array.isArray(color) ? color[index % color.length] : color;
     ctx.fill();
@@ -237,6 +234,46 @@ function drawBarChart(canvas, rows, { labelKey, valueKey, color = CHART_COLORS.p
       ctx.font = "700 12px 'Segoe UI', 'Microsoft YaHei UI', sans-serif";
       ctx.fillText(formatNumber(value), x + barW / 2, Math.max(17, y - 9));
     }
+  });
+}
+
+function drawSegmentChart(canvas, rows, { labelKey, valueKey, colors } = {}) {
+  if (!rows?.length || rows.every((row) => !Number(row[valueKey]))) return drawEmptyChart(canvas, "暂无指标结构数据");
+  const ready = canvasContext(canvas);
+  if (!ready) return;
+  const { ctx, width, height } = ready;
+  const total = rows.reduce((sum, row) => sum + (Number(row[valueKey]) || 0), 0);
+  const left = 28;
+  const top = Math.max(46, height * 0.28);
+  const barWidth = width - left * 2;
+  const barHeight = 28;
+  let offset = left;
+
+  rows.forEach((row, index) => {
+    const value = Number(row[valueKey]) || 0;
+    const widthPart = barWidth * value / total;
+    ctx.fillStyle = colors[index % colors.length];
+    roundedRectPath(ctx, offset, top, widthPart + (index === 0 || index === rows.length - 1 ? 0 : 1), barHeight, index === 0 || index === rows.length - 1 ? 8 : 0);
+    ctx.fill();
+    offset += widthPart;
+  });
+
+  rows.forEach((row, index) => {
+    const columnWidth = barWidth / rows.length;
+    const x = left + index * columnWidth;
+    const value = Number(row[valueKey]) || 0;
+    ctx.fillStyle = colors[index % colors.length];
+    ctx.fillRect(x, top + 72, 18, 3);
+    ctx.fillStyle = CHART_COLORS.text;
+    ctx.font = "600 11px 'Microsoft YaHei UI', sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(String(row[labelKey]), x, top + 57);
+    ctx.fillStyle = CHART_COLORS.ink;
+    ctx.font = "700 24px Bahnschrift, 'Microsoft YaHei UI', sans-serif";
+    ctx.fillText(formatNumber(value), x, top + 102);
+    ctx.fillStyle = CHART_COLORS.text;
+    ctx.font = "10px 'Microsoft YaHei UI', sans-serif";
+    ctx.fillText(`${formatNumber(value / total * 100, 1)}%`, x, top + 121);
   });
 }
 
@@ -319,6 +356,10 @@ function drawLineChart(canvas, points) {
     ctx.fillStyle = CHART_COLORS.text; ctx.textAlign = "right"; ctx.font = "10px 'Segoe UI', 'Microsoft YaHei UI', sans-serif";
     ctx.fillText(formatNumber(max - ((max - min) * i) / 4, 2), margin.left - 8, y + 4);
   }
+  ctx.fillStyle = CHART_COLORS.warning || "#8c641f";
+  ctx.textAlign = "left";
+  ctx.font = "600 10px 'Segoe UI', 'Microsoft YaHei UI', sans-serif";
+  ctx.fillText("纵轴按数据区间缩放", margin.left, 15);
   ctx.beginPath();
   points.forEach((point, index) => {
     const x = xAt(index), y = yAt(Number(point.normalized_value));
@@ -366,7 +407,30 @@ function renderSummaryKpis(summary) {
     ["证据片段", summary.evidence_count, "条", "可回溯来源文本"],
   ];
   target.innerHTML = rows.map(([label, value, unit, foot]) => `
-    <article class="kpi-item"><span>${escapeHtml(label)}</span><strong>${formatNumber(value)}</strong><small>${escapeHtml(unit)}</small><span class="kpi-foot">${escapeHtml(foot)}</span></article>
+    <article class="kpi-item"><span class="kpi-label">${escapeHtml(label)}</span><div class="kpi-value"><strong>${formatNumber(value)}</strong><small>${escapeHtml(unit)}</small></div><span class="kpi-foot">${escapeHtml(foot)}</span></article>
+  `).join("");
+}
+
+function renderHeroRuntime(summary) {
+  qsa("[data-runtime='reports']").forEach((item) => { item.textContent = `${formatNumber(summary.report_count)} 份`; });
+  qsa("[data-runtime='evidence']").forEach((item) => { item.textContent = `${formatNumber(summary.evidence_count)} 条`; });
+}
+
+function renderScopeArchitecture(indicators) {
+  const target = byId("scopeArchitecture")?.querySelector(".scope-levels");
+  if (!target) return;
+  const total = indicators.length;
+  const p0 = indicators.filter((item) => item.extraction_priority === "P0").length;
+  const p0Quant = indicators.filter((item) => item.extraction_priority === "P0" && item.metric_type === "quantitative").length;
+  const quantitative = indicators.filter((item) => item.metric_type === "quantitative").length;
+  const qualitative = indicators.filter((item) => item.metric_type === "qualitative").length;
+  const levels = [
+    ["完整指标体系", total, `定量 ${quantitative} / 定性 ${qualitative}`],
+    ["P0 默认抽取层", p0, "在线任务优先处理"],
+    ["P0 定量验证子集", p0Quant, "固定字段泛化验收"],
+  ];
+  target.innerHTML = levels.map(([label, value, note], index) => `
+    <article style="--scope-ratio:${Math.max(16, value / total * 100)}%"><span>${escapeHtml(label)}</span><strong>${formatNumber(value)}<small> 项</small></strong><p>${escapeHtml(note)}</p>${index < levels.length - 1 ? '<i aria-hidden="true"></i>' : ""}</article>
   `).join("");
 }
 
@@ -398,6 +462,8 @@ async function loadOverview() {
     state.summary = summaryResponse.data;
     state.indicators = indicatorResponse.data;
     renderSummaryKpis(state.summary);
+    renderHeroRuntime(state.summary);
+    renderScopeArchitecture(state.indicators);
     renderRecentReports(reportsResponse.data);
     drawBarChart(byId("yearChart"), state.summary.report_years, { labelKey: "year", valueKey: "reports", color: CHART_COLORS.primary });
     drawDonutChart(byId("jobChart"), state.summary.job_statuses, { labelKey: "status", valueKey: "count", colors: CHART_COLORS.statuses });
@@ -405,7 +471,7 @@ async function loadOverview() {
       dimension,
       count: state.indicators.filter((item) => item.dimension === dimension).length,
     }));
-    drawBarChart(byId("indicatorChart"), dimensions, { labelKey: "dimension", valueKey: "count", color: CHART_COLORS.dimensions });
+    drawSegmentChart(byId("indicatorChart"), dimensions, { labelKey: "dimension", valueKey: "count", colors: CHART_COLORS.dimensions });
     renderDimensionLegend(dimensions);
     populateAnalysisControls();
   } catch (error) {
@@ -566,12 +632,27 @@ async function populateAnalysisControls() {
     const indicatorSelect = byId("analysisIndicator");
     const companyOptions = data.map((item) => `<option value="${escapeHtml(item.company_id)}">${escapeHtml(item.stock_code)} ${escapeHtml(item.current_short_name)}</option>`).join("");
     if (companySelect) companySelect.innerHTML = `<option value="">选择企业</option>${companyOptions}`;
-    if (compare) compare.innerHTML = companyOptions;
+    if (compare) {
+      compare.innerHTML = companyOptions;
+      renderCompareSelection();
+    }
     const quantitative = state.indicators.filter((item) => item.metric_type === "quantitative");
     if (indicatorSelect) indicatorSelect.innerHTML = `<option value="">选择定量指标</option>${quantitative.map((item) => `<option value="${escapeHtml(item.indicator_id)}">${escapeHtml(item.indicator_id)} ${escapeHtml(item.metric_name_cn)}</option>`).join("")}`;
   } catch (error) {
     notify(`分析筛选项载入失败：${error.message}`, "error");
   }
+}
+
+function renderCompareSelection() {
+  const select = byId("compareCompanies");
+  const target = byId("compareSelectionSummary");
+  if (!select || !target) return;
+  const selected = [...select.selectedOptions];
+  if (!selected.length) {
+    target.innerHTML = "<span>尚未选择企业</span>";
+    return;
+  }
+  target.innerHTML = `<strong>已选 ${selected.length} 家</strong><div>${selected.slice(0, 4).map((option) => `<span>${escapeHtml(option.textContent)}</span>`).join("")}${selected.length > 4 ? `<span>+${selected.length - 4}</span>` : ""}</div>`;
 }
 
 async function loadTrend() {
@@ -604,7 +685,8 @@ async function runCompare() {
     companyIds.forEach((id) => query.append("company_id", id));
     const { data } = await api(`/compare?${query}`);
     if (!data.comparable) return renderMessage(target, "当前选择不可比较", data.reason, "empty");
-    target.innerHTML = `<div class="comparison-bars">${data.items.map((item) => `<article><div><strong>${escapeHtml(item.stock_code)} ${escapeHtml(item.current_short_name)}</strong><span>${formatNumber(item.normalized_value, 3)} ${escapeHtml(item.unit_normalized)}</span></div><meter min="0" max="${Math.max(...data.items.map((row) => Number(row.normalized_value) || 0), 1)}" value="${Number(item.normalized_value) || 0}"></meter><small>${statusLabel(item.verification_status)} · 置信度 ${formatNumber(item.confidence, 3)}</small></article>`).join("")}</div><p class="subtle">${escapeHtml(data.comparison_basis)}</p><p class="boundary-note">机器等级与置信度用于证据质量分层，不等于人工金标正确率；结果仍需结合原文证据复核。</p>`;
+    const maxValue = Math.max(...data.items.map((row) => Number(row.normalized_value) || 0), 1);
+    target.innerHTML = `<div class="comparison-bars">${data.items.map((item) => `<article><div><strong>${escapeHtml(item.stock_code)} ${escapeHtml(item.current_short_name)}</strong><span>${formatNumber(item.normalized_value, 3)} ${escapeHtml(item.unit_normalized)}</span></div><div class="comparison-scale" aria-hidden="true"><i style="width:${Math.max(2, (Number(item.normalized_value) || 0) / maxValue * 100)}%"></i></div><small>${statusLabel(item.verification_status)} / 置信度 ${formatNumber(item.confidence, 3)}</small></article>`).join("")}</div><p class="subtle">${escapeHtml(data.comparison_basis)}</p><p class="boundary-note">机器等级与置信度用于证据质量分层，所有结果均可继续回到原文核验。</p>`;
   } catch (error) {
     renderMessage(target, "企业对比读取失败", error.message, "error");
   }
@@ -710,6 +792,7 @@ function bindEvents() {
   byId("analysisCompany")?.addEventListener("change", loadTrend);
   byId("analysisIndicator")?.addEventListener("change", loadTrend);
   byId("compareBtn")?.addEventListener("click", runCompare);
+  byId("compareCompanies")?.addEventListener("change", renderCompareSelection);
   byId("evidenceSearch")?.addEventListener("keydown", (event) => { if (event.key === "Enter") { event.preventDefault(); runEvidenceSearch(); } });
   byId("evidenceSearchBtn")?.addEventListener("click", runEvidenceSearch);
   byId("refreshJobs")?.addEventListener("click", loadJobs);
@@ -730,7 +813,7 @@ function bindEvents() {
         drawBarChart(byId("yearChart"), state.summary.report_years, { labelKey: "year", valueKey: "reports", color: CHART_COLORS.primary });
         drawDonutChart(byId("jobChart"), state.summary.job_statuses, { labelKey: "status", valueKey: "count", colors: CHART_COLORS.statuses });
         const dimensions = ["E", "S", "G"].map((dimension) => ({ dimension, count: state.indicators.filter((item) => item.dimension === dimension).length }));
-        drawBarChart(byId("indicatorChart"), dimensions, { labelKey: "dimension", valueKey: "count", color: CHART_COLORS.dimensions });
+        drawSegmentChart(byId("indicatorChart"), dimensions, { labelKey: "dimension", valueKey: "count", colors: CHART_COLORS.dimensions });
       }
       loadTrend();
     }, 180);

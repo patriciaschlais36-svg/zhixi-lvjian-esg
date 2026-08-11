@@ -178,10 +178,12 @@ def candidate_value_variants(value: str) -> list[str]:
         if item and item not in variants:
             variants.append(item)
         if item and "," not in item:
-            parts = item.split(".")
+            suffix = "+" if item.endswith("+") else ""
+            base = item.rstrip("+")
+            parts = base.split(".")
             whole = parts[0]
-            if len(whole) > 3:
-                comma = f"{int(whole):,}" + (f".{parts[1]}" if len(parts) > 1 else "")
+            if len(whole) > 3 and whole.isdigit():
+                comma = f"{int(whole):,}" + (f".{parts[1]}" if len(parts) > 1 else "") + suffix
                 if comma not in variants:
                     variants.append(comma)
     return variants
@@ -190,7 +192,7 @@ def candidate_value_variants(value: str) -> list[str]:
 def has_nearby_non_exact_qualifier(source: str, value: str) -> bool:
     text = clean_text(source)
     before_tokens = ("约", "近", "超过", "超", "不少于", "至少", "不低于", "大于", "逾")
-    after_tokens = ("以上", "左右", "上下", "余", "+", "＋")
+    after_tokens = ("以上", "左右", "上下", "余")
     for variant in candidate_value_variants(value):
         if not variant:
             continue
@@ -202,11 +204,55 @@ def has_nearby_non_exact_qualifier(source: str, value: str) -> bool:
                 return True
             if any(token in right for token in after_tokens):
                 return True
+            if re.match(r"^\s*[+＋]", right):
+                return True
     return False
 
 
 def has_explicit_ratio_context(source: str) -> bool:
     return any(token in source for token in ("占比", "比例", "比率", "%", "％"))
+
+
+def parse_small_chinese_count(value: str) -> int | None:
+    value = str(value or "").strip()
+    if value.isdigit():
+        return int(value)
+    digits = {
+        "零": 0, "一": 1, "二": 2, "两": 2, "三": 3, "四": 4, "五": 5,
+        "六": 6, "七": 7, "八": 8, "九": 9,
+    }
+    if value in digits:
+        return digits[value]
+    if value == "十":
+        return 10
+    match = re.fullmatch(r"([一二两三四五六七八九])?十([一二三四五六七八九])?", value)
+    if not match:
+        return None
+    return digits.get(match.group(1), 1) * 10 + digits.get(match.group(2), 0)
+
+
+def derived_independent_director_ratio_from_counts(source: str) -> str:
+    text = clean_text(source)
+    count = r"([0-9]+|[一二两三四五六七八九十]{1,3})"
+    board_patterns = [
+        rf"董事会由\s*{count}\s*名(?:成员|董事)(?:组成|构成)",
+        rf"董事会(?:成员)?(?:总人数|人数|共有|共)\s*{count}\s*(?:人|名|位)",
+    ]
+    independent_patterns = [
+        rf"(?:其中[^。；]{{0,30}}?)?(?<!非)独立董事\s*{count}\s*(?:人|名|位)",
+        rf"{count}\s*(?:人|名|位)(?:为)?(?<!非)独立董事",
+    ]
+    board_match = next((re.search(pattern, text) for pattern in board_patterns if re.search(pattern, text)), None)
+    independent_match = next(
+        (re.search(pattern, text) for pattern in independent_patterns if re.search(pattern, text)), None
+    )
+    if not board_match or not independent_match:
+        return ""
+    board = parse_small_chinese_count(board_match.group(1))
+    independent = parse_small_chinese_count(independent_match.group(1))
+    if not board or independent is None or independent > board:
+        return ""
+    return f"{independent * 100 / board:.2f}"
 
 
 def is_generic_compliance_training_context(source: str) -> bool:
@@ -409,8 +455,35 @@ def explicit_percentage_phrase_value(source: str, label: str) -> str:
 
 def explicit_employee_total_value(source: str) -> str:
     text = clean_text(source)
+
+    # OCR/plain-text KPI rows often attach a footnote marker directly to the
+    # label, for example ``员工总数1 人 2,844 3,177 2,971``.  The previous
+    # generic fallback interpreted that marker as the headcount.  Conversely,
+    # in prose such as ``员工总人数12781人（第56页）`` the adjacent number is
+    # the actual value and the page number must not replace it.  Resolve these
+    # two layouts before the generic row parser.
+    direct_labels = ("员工总人数", "员工总数", "员工总人数", "正式员工总数")
+    for label in direct_labels:
+        pattern = re.escape(label) + r"\s*(?P<adj>\d+(?:,\d{3})*(?:\.\d+)?)\s*(?:人|名)(?P<tail>[^。；\n]{0,140})"
+        for match in re.finditer(pattern, text):
+            adjacent = parse_number(match.group("adj"))
+            if not adjacent:
+                continue
+            tail = re.sub(r"第\s*\d+\s*页", "", match.group("tail"))
+            following = [parse_number(raw) for raw in NUM_RE.findall(tail)]
+            following = [value for value in following if value]
+            try:
+                adjacent_number = float(adjacent)
+            except ValueError:
+                adjacent_number = -1.0
+            if 0 <= adjacent_number <= 9 and following:
+                # A one-digit token between label and unit is a footnote when
+                # the row continues with one or more actual KPI values.
+                return pick_2025_value(following[:3], source, fallback="last")
+            return adjacent
     banned = (
         "新进",
+        "新入职",
         "一般",
         "反腐败培训",
         "接受培训",
@@ -508,8 +581,8 @@ def explicit_independent_director_count_value(source: str) -> str:
             return value
 
     patterns = [
-        r"独立(?:非执行)?董事\s*([0-9,]+(?:\.\d+)?)\s*(?:人|名|位)",
-        r"([0-9,]+(?:\.\d+)?)\s*(?:人|名|位)\s*独立(?:非执行)?董事",
+        r"(?<!非)独立(?:非执行)?董事\s*([0-9,]+(?:\.\d+)?)\s*(?:人|名|位)",
+        r"([0-9,]+(?:\.\d+)?)\s*(?:人|名|位)\s*(?<!非)独立(?:非执行)?董事",
         r"其中[，,\s]*独立董事\s*([0-9,]+(?:\.\d+)?)\s*(?:人|名|位)",
         r"董事会由\s*([0-9,]+(?:\.\d+)?)\s*名成员构成[（(]其中独立董事\s*([0-9,]+(?:\.\d+)?)\s*名",
     ]
@@ -546,6 +619,31 @@ def explicit_independent_director_count_value(source: str) -> str:
 
 def explicit_corruption_case_count_value(source: str) -> str:
     text = clean_text(source)
+
+    # Prefer a metric-row value after the count unit.  Ignore four-digit year
+    # tokens embedded between the label and the final value.
+    row_patterns = (
+        r"贪污诉讼案件数(?:量|目)?\s*(?:件|起)?(?P<tail>[^。；\n]{0,120})",
+        r"(?:腐败|贪污|商业贿赂|违规)(?:事件|案件)(?:数量|数目)?\s*(?:件|起)?(?P<tail>[^。；\n]{0,120})",
+    )
+    for pattern in row_patterns:
+        match = re.search(pattern, text, flags=re.IGNORECASE)
+        if not match:
+            continue
+        values = [parse_number(raw) for raw in NUM_RE.findall(match.group("tail"))]
+        non_year_values: list[str] = []
+        for value in values:
+            if not value:
+                continue
+            try:
+                number = float(value)
+            except ValueError:
+                continue
+            if number.is_integer() and 1900 <= number <= 2100:
+                continue
+            non_year_values.append(value)
+        if non_year_values:
+            return non_year_values[-1]
     if re.search(r"(未发生|无)[^。；]{0,45}(贪污|腐败|商业贿赂|违规)[^。；]{0,45}(事件|案件|诉讼|记录)", text):
         return "0"
     patterns = [
@@ -559,6 +657,12 @@ def explicit_corruption_case_count_value(source: str) -> str:
         if match:
             value = parse_number(match.group(1))
             if value:
+                try:
+                    number = float(value)
+                except ValueError:
+                    number = -1.0
+                if number.is_integer() and 1900 <= number <= 2100:
+                    continue
                 return value
     return ""
 
@@ -567,7 +671,15 @@ def explicit_employee_training_total_hours_value(source: str) -> str:
     text = clean_text(source)
     labels = (
         "员工接受培训总时长",
+        "培训总小时数",
         "员工培训总时长",
+        "培训总时长",
+        "总培训时长",
+        "累计培训时长",
+        "員工培訓總時長",
+        "培訓總時長",
+        "總培訓時長",
+        "累計培訓時長",
         "员工接受反贪污培训的总时长",
         "员工接受反腐败培训的总时长",
     )
@@ -579,6 +691,31 @@ def explicit_employee_training_total_hours_value(source: str) -> str:
         if value:
             return value
     return ""
+
+
+def explicit_total_water_value(source: str) -> tuple[str, str]:
+    text = clean_text(source)
+    labels = (
+        "耗水总量",
+        "用水总量",
+        "总用水量",
+        "取水总量",
+        "水资源使用量",
+        "水資源使用量",
+        "水资源消耗量",
+        "水資源消耗量",
+        "總耗水量",
+    )
+    units = r"(?:万吨|萬噸|吨|噸|万立方米|萬立方米|立方米|m3|m³)"
+    number = r"([0-9,]+(?:\.\d+)?)"
+    for label in labels:
+        match = re.search(rf"{re.escape(label)}\s*{number}\s*({units})", text, flags=re.IGNORECASE)
+        if match:
+            return parse_number(match.group(1)), match.group(2)
+        match = re.search(rf"{re.escape(label)}\s*({units})\s*{number}", text, flags=re.IGNORECASE)
+        if match:
+            return parse_number(match.group(2)), match.group(1)
+    return "", ""
 
 
 def explicit_donation_value(source: str) -> tuple[str, str]:
@@ -616,17 +753,35 @@ def decide(row: dict[str, str]) -> tuple[str, str, dict[str, str]]:
     number = numeric_value(row)
     standardized_number = standardized_numeric_value(row)
 
-    if has_nearby_non_exact_qualifier(source, value):
+    if has_nearby_non_exact_qualifier(source, value) and not str(value).strip().endswith(("+", "＋")):
         reason = "numeric_risk_guard blocked exact numeric output because evidence uses a nearby approximate/lower-bound qualifier"
         return "blocked_non_exact_qualified_value", reason, block_candidate(row, "blocked_non_exact_qualified_value", reason)
 
+    if field == "E_Q_013" and any(token in source for token in ("利用处置总量", "委托处置总量", "处置总量")) and "产生量" not in source:
+        reason = "numeric_risk_guard blocked hazardous-waste generation candidate sourced only from disposal volume"
+        return "blocked_disposal_not_generation", reason, block_candidate(row, "blocked_disposal_not_generation", reason)
+
     if field == "G_Q_003" and not has_explicit_ratio_context(source):
-        reason = "numeric_risk_guard blocked independent-director ratio candidate derived from counts without explicit ratio evidence"
+        derived_ratio = derived_independent_director_ratio_from_counts(source)
+        if derived_ratio and numbers_equal(value, derived_ratio):
+            reason = "numeric_risk_guard verified independent-director ratio from exhaustive board and independent-director counts"
+            return "kept_verified_derived_ratio", reason, dict(row)
+        reason = "numeric_risk_guard blocked independent-director ratio candidate derived from counts without verifiable exhaustive components"
         return "blocked_derived_ratio_without_explicit_ratio_context", reason, block_candidate(row, "blocked_derived_ratio_without_explicit_ratio_context", reason)
 
-    if field == "S_Q_004" and any(token in source for token in ("平均时长", "人均", "平均培训", "接受培训的平均时长")) and not any(token in source for token in ("培训总时长", "总培训时长", "累计培训时长", "学习累计时长")):
+    if field == "S_Q_004" and any(token in source for token in ("平均时长", "人均", "平均培训", "接受培训的平均时长", "平均時長", "人均受訓")) and not any(token in source for token in ("培训总时长", "培训总小时数", "总培训时长", "累计培训时长", "学习累计时长", "培訓總時長", "總培訓時長", "累計培訓時長")):
         reason = "numeric_risk_guard blocked total-training-hours candidate sourced from average/per-capita training-hours context"
         return "blocked_average_hours_not_total_training_hours", reason, block_candidate(row, "blocked_average_hours_not_total_training_hours", reason)
+
+    if field == "S_Q_005" and not any(token in source for token in ("人均", "平均", "每名员工", "每位员工", "每名員工", "每位員工", "小时/人", "小時/人", "分钟/人", "分鐘/人")):
+        reason = "numeric_risk_guard blocked average-training-hours candidate without explicit average/per-capita context"
+        return "blocked_total_hours_not_average_training_hours", reason, block_candidate(row, "blocked_total_hours_not_average_training_hours", reason)
+
+    if field == "E_Q_009" and any(token in source for token in ("人均耗水", "人均用水", "人均取水", "每人耗水", "单位面积耗水", "單位面積耗水")):
+        corrected_value, corrected_unit = explicit_total_water_value(source)
+        if corrected_value and not numbers_equal(value, corrected_value):
+            reason = "numeric_risk_guard corrected water total from explicit total row instead of per-capita/intensity row"
+            return "corrected_water_total_over_intensity", reason, correct_value(row, "corrected_water_total_over_intensity", reason, corrected_value, corrected_unit)
 
     if field == "G_Q_009" and is_generic_compliance_training_context(source):
         reason = "numeric_risk_guard blocked anti-corruption-training candidate sourced only from generic compliance training context"
@@ -826,6 +981,13 @@ def decide(row: dict[str, str]) -> tuple[str, str, dict[str, str]]:
         if corrected and not numbers_equal(value, corrected):
             reason = "numeric_risk_guard corrected corruption/compliance case count from explicit evidence row"
             return "corrected_corruption_case_count", reason, correct_value(row, "corrected_corruption_case_count", reason, corrected, row.get("unit_raw_candidate", "") or "件")
+        try:
+            current_count = float(parse_number(value) or "nan")
+        except ValueError:
+            current_count = float("nan")
+        if current_count.is_integer() and 1900 <= current_count <= 2100:
+            reason = "numeric_risk_guard blocked a four-digit year token misread as corruption-case count"
+            return "blocked_year_token_not_corruption_case_count", reason, block_candidate(row, "blocked_year_token_not_corruption_case_count", reason)
 
     if field == "G_Q_001":
         corrected = explicit_board_size_value(source)

@@ -6,6 +6,7 @@ import json
 import math
 import os
 import re
+import unicodedata
 import time
 from collections import Counter, defaultdict
 from datetime import datetime
@@ -95,8 +96,8 @@ STRUCTURED_VALUE_PAGE_CUES = [
 UNIT_PATTERN = (
     r"万吨二氧化碳当量|吨二氧化碳当量|吨CO2e|kgCO2e|tCO2e|"
     r"万吨标准煤|万吨标煤|吨标准煤|吨标煤|万吨|吨|t|kg|"
-    r"万千瓦时|千瓦时|kWh|MWh|GJ|百万千焦|"
-    r"立方米|万立方米|m3|人次|人时|小时/人|小时|学时|"
+    r"万千瓦时|千瓦时|kWh|MWh|度|TJ|太焦|GJ|吉焦|百万千焦|"
+    r"立方米|万立方米|m3|人次|人时|小时/人|小时|学时|分钟/人|分钟|"
     r"万元|亿元|元|人民币|人|名|次|场|件|起|宗|%|％"
 )
 NUMBER_PATTERN = re.compile(
@@ -180,6 +181,9 @@ EXTRA_TERMS = {
 
 def normalize_text(text: str) -> str:
     text = text or ""
+    # OCR/PDF text may contain compatibility glyphs such as ``⼊`` for ``入``.
+    # NFKC keeps matching deterministic without changing the stored evidence.
+    text = unicodedata.normalize("NFKC", text)
     for old, new in PDF_TEXT_FIXES.items():
         text = text.replace(old, new)
     text = text.replace("，", ",").replace("．", ".")
@@ -290,11 +294,14 @@ def load_ocr_payload_for_page(sample_id: str, physical_page: int) -> dict[str, A
 def native_text_is_garbled(text: str) -> bool:
     if not text:
         return False
-    cid_count = len(re.findall(r"\(cid:\d+\)", text))
-    if cid_count == 0:
-        return False
-    cid_ratio = (cid_count * 8) / max(1, len(text))
-    return cid_ratio >= OCR_CID_RATIO_THRESHOLD
+    cid_chars = sum(match.end() - match.start() for match in re.finditer(r"\(cid:\d+\)", text))
+    invalid_chars = text.count("\ufffd")
+    for char in text:
+        category = unicodedata.category(char)
+        if category == "Co" or (category.startswith("C") and char not in "\t\r\n"):
+            invalid_chars += 1
+    denominator = max(1, len(text))
+    return cid_chars / denominator >= OCR_CID_RATIO_THRESHOLD or invalid_chars / denominator >= 0.05
 
 
 def infer_ocr_report_page_candidates(physical_page: int, text: str) -> list[str]:
@@ -846,9 +853,19 @@ def extract_number(text: str, indicator: dict[str, Any]) -> tuple[str, str]:
     zero_value = explicit_zero_value(text, indicator)
     if zero_value:
         return zero_value
+    field_id = indicator.get("field_id", "")
+    # Semantic abstention for a field whose nearby labels are routinely confounded.
+    if field_id == "G_Q_009" and not any(cue in text for cue in ("反腐", "廉洁", "商业道德", "反舞弊")):
+        return "", ""
+    if field_id == "G_Q_002" and any(cue in text for cue in ("独立董事占比", "独立董事比例", "独董占比")) and not any(cue in text for cue in ("独立董事人数", "独立董事有", "独立董事3", "独立董事 3")):
+        return "", ""
+    if field_id == "S_Q_001":
+        direct_people = re.search(r"(?:全球共有员工|共有员工|全球共有|共有|员工总数为|员工总人数为|员工人数为|员工总数|员工总人数|员工人数)\s*([0-9][0-9,]*)\s*(?:名|人)", text)
+        if direct_people:
+            return direct_people.group(1).replace(",", ""), direct_people.group(0)[direct_people.group(0).rfind(direct_people.group(1)) + len(direct_people.group(1)):].strip()
     # ── v2.4: G_Q_001 董事会总数特殊提取 ──
     # "董事会由 X 名董事组成" 模式明确表示总数
-    if indicator.get("field_id") == "G_Q_001":
+    if field_id == "G_Q_001":
         # OCR文本中 "董事会由 12 名董事组成" 常被拆分
         # 策略1: "董事会由 ... X ... 名董事"
         board_match = re.search(r"董事会由.{0,40}?(\d+)\s*名", text)
@@ -857,7 +874,7 @@ def extract_number(text: str, indicator: dict[str, Any]) -> tuple[str, str]:
             if 3 <= val <= 30:  # 合理董事会规模
                 return board_match.group(1), "人"
         # 策略2: 在包含"董事会"的段落中，找5-20之间的数字（合理规模）
-        if "董事会" in text or "董事" in text:
+        if any(cue in text for cue in ("董事会成员人数", "董事会人数", "董事会由")):
             for m in re.finditer(r"\b(\d+)\b", text):
                 val = int(m.group(1))
                 if 7 <= val <= 20:  # 典型董事会规模
@@ -1295,6 +1312,63 @@ def cells_for_table_row(row: dict[str, Any]) -> list[str]:
     return [normalize_text(str(cell or "")) for cell in cells if normalize_text(str(cell or ""))]
 
 
+# v0.9: common ESG tables expose parallel columns as "labels | units | values".
+# Keep this mapping small and semantic: it is a row-alignment aid, not a label source.
+TABLE_PARALLEL_LABELS: dict[str, list[str]] = {
+    "E_Q_007": ["能源消耗总量", "能源消耗强度", "外购电力总量", "总用水量"],
+    "E_Q_009": ["能源消耗总量", "能源消耗强度", "外购电力总量", "总用水量", "总耗水量", "取水量"],
+    "S_Q_001": ["总资产", "营业收入", "研发投入", "授权专利累计数", "纳税总额", "软件著作累计数", "商标累计数", "股东会召开次数", "公益投入", "员工总数", "员工总人数", "劳动合同签订率", "董事会召开次数", "独立董事占比", "员工培训总投入", "客服电话满意度"],
+    "S_Q_017": ["股东会召开次数", "公益投入", "公益慈善总投入", "员工总数", "劳动合同签订率", "乡村振兴投入"],
+}
+
+
+def _parallel_table_value(row: dict[str, Any], indicator: dict[str, Any]) -> tuple[str, str, str] | None:
+    """Align a target label with its unit/value at the same ordinal in a flat table row."""
+    field_id = indicator.get("field_id", "")
+    labels = TABLE_PARALLEL_LABELS.get(field_id)
+    if not labels:
+        return None
+    cells = cells_for_table_row(row)
+    if len(cells) < 3:
+        return None
+    label_cell = cells[0]
+    unit_cell_index = 1
+    value_cell_index = len(cells) - 1
+    target_aliases = [indicator.get("metric_name_cn", "")] + split_aliases(
+        indicator.get("aliases_cn", ""), indicator.get("aliases_en", "")
+    )
+    target_pos = -1
+    for alias in sorted((a for a in target_aliases if a), key=len, reverse=True):
+        pos = label_cell.find(alias)
+        if pos >= 0:
+            # Ratio labels must not satisfy an absolute-count field.
+            if field_id == "S_Q_001" and any(cue in label_cell[max(0, pos - 4):pos + len(alias) + 6] for cue in ("占比", "比例")):
+                continue
+            target_pos = pos
+            break
+    if target_pos < 0:
+        return None
+    ordered_labels = []
+    for label in labels:
+        pos = label_cell.find(label)
+        if pos >= 0:
+            ordered_labels.append((pos, label))
+    ordered_labels.sort(key=lambda item: item[0])
+    ordinal = next((idx for idx, (pos, label) in enumerate(ordered_labels) if pos == target_pos), None)
+    if ordinal is None:
+        # Alias may point inside a longer configured label; use preceding labels as an approximation.
+        ordinal = sum(1 for pos, _ in ordered_labels if pos < target_pos)
+    unit_tokens = [token for token in re.split(r"\s+", cells[unit_cell_index]) if token]
+    value_matches = list(non_year_number_matches(cells[value_cell_index]))
+    if not unit_tokens or not value_matches or ordinal >= len(unit_tokens) or ordinal >= len(value_matches):
+        return None
+    unit = unit_tokens[ordinal]
+    value = (value_matches[ordinal].group("value") or "").replace(",", "")
+    if not value or not unit_is_compatible(unit, indicator):
+        return None
+    return value, unit, "table_parallel_column_alignment_v0.9"
+
+
 def infer_unit_from_cells(cells: list[str], cell_index: int, indicator: dict[str, Any]) -> str:
     accepted_units = accepted_units_for(indicator)
     window = cells[max(0, cell_index - 2) : min(len(cells), cell_index + 2)]
@@ -1373,6 +1447,17 @@ def extract_number_from_table_row(row: dict[str, Any], indicator: dict[str, Any]
     cells = cells_for_table_row(row)
     if not cells:
         return None
+
+    header_year_count = len(re.findall(r"20(?:23|24|25|26)", header_context))
+    row_value_count = len(non_year_number_matches(cells[-1])) if cells else 0
+    if indicator.get("field_id") in {"E_Q_015", "S_Q_001"} and header_year_count >= 3 and row_value_count < 3:
+        return None
+    if indicator.get("field_id") == "E_Q_012" and any(cue in row_text for cue in ("单位产量", "密度", "/吨产品", "/吨")):
+        return None
+
+    aligned = _parallel_table_value(row, indicator)
+    if aligned:
+        return aligned
 
     # ── v2.3: 强制上下文门控 ──
     # 计算行级上下文特异性得分，低于阈值则拒绝提取
@@ -1718,6 +1803,32 @@ def build_candidate_record(
             value, unit = extract_number(source_text if evidence_type == "native_text" else source_table_cell or source_text, indicator)
             value_method = "text_rule" if value else "none"
     evidence_text = f"{source_text} {source_table_cell}"
+    if indicator.get("field_id") == "E_Q_005" and value:
+        ratio_value = next(
+            (
+                (match.group("value") or "").replace(",", "")
+                for match in non_year_number_matches(evidence_text)
+                if 0 < float((match.group("value") or "0").replace(",", "")) < 100
+                and "温室气体排放强度" in evidence_text
+            ),
+            "",
+        )
+        if ratio_value:
+            value = ratio_value
+            unit = "吨二氧化碳当量/吨产品" if "吨产品" in evidence_text else unit
+            value_method = f"{value_method}_ratio_metric_rule"
+    if indicator.get("field_id") == "G_Q_009" and not any(cue in evidence_text for cue in ("反腐", "廉洁", "商业道德", "反舞弊")):
+        value = ""
+        unit = ""
+        value_method = f"{value_method}_semantic_rejected"
+    if indicator.get("field_id") == "G_Q_009" and "覆盖率" in evidence_text and not any(cue in evidence_text for cue in ("培训参与人次", "培训人数", "培训次数")):
+        value = ""
+        unit = ""
+        value_method = f"{value_method}_coverage_rejected"
+    if indicator.get("field_id") == "G_Q_002" and any(cue in evidence_text for cue in ("独立董事占比", "独立董事比例", "独董占比")) and not any(cue in evidence_text for cue in ("独立董事人数", "独立董事有")):
+        value = ""
+        unit = ""
+        value_method = f"{value_method}_ratio_rejected"
     if value and value_is_known_false_positive(value, unit, indicator, evidence_text):
         value = ""
         unit = ""
@@ -1792,6 +1903,28 @@ def deduplicate_cross_indicator(
         src = (rec.get("source_table_cell") or rec.get("source_text") or "")[:80]
         return src.strip()
 
+    def _strong_explicit_candidate(rec: dict[str, Any]) -> bool:
+        """Keep an explicit label-value sentence from cross-field numeric dedup."""
+        field_id = rec.get("field_id", "")
+        text = normalize_text(
+            f"{rec.get('source_text', '')} {rec.get('source_table_cell', '')}"
+        )
+        if not rec.get("value_candidate"):
+            return False
+        if field_id == "G_Q_001":
+            return bool(re.search(r"董事会由.{0,30}?\d[\d,]*\s*名?董事组成|董事会成员人数\s*人?\s*\d[\d,]*", text))
+        if field_id == "S_Q_001":
+            return bool(re.search(r"(?:全球共有员工|共有员工|员工总数(?:为)?|员工人数(?:为)?)\s*\d[\d,]*\s*(?:名|人)", text))
+        if field_id == "G_Q_002":
+            return bool(re.search(r"独立(?:非执行)?董事(?:人数|有|为)?\s*\d[\d,]*\s*(?:名|人)", text))
+        if field_id == "G_Q_009":
+            return bool(re.search(r"(?:反腐败|反舞弊|廉洁|商业道德).{0,50}?培训.{0,30}?\d[\d,]*\s*(?:人次|人|次|场)", text))
+        if field_id == "E_Q_007":
+            return bool(re.search(r"(?:外购电力|用电量|购电).{0,30}?\d[\d,]*\.?\d*\s*(?:千瓦时|kWh|兆瓦时|MWh)", text, re.I))
+        if field_id == "E_Q_015":
+            return bool(re.search(r"(?:环保投入|环境保护投入|节能环保投入|环保投资).{0,30}?\d[\d,]*\.?\d*\s*(?:元|万元|亿元|人民币)", text))
+        return False
+
     conflict_groups: dict[tuple[str, str, str, str], list[dict[str, Any]]] = defaultdict(list)
     for rec in records:
         if rec.get("candidate_status") != "candidate_found":
@@ -1853,6 +1986,10 @@ def deduplicate_cross_indicator(
 
         # 质量显著落后的候选 → 无效化（v2.3.1: 阈值从20提高到40）
         for score, rec in scored_group[1:]:
+            # An explicit field-specific sentence is stronger than a shared
+            # number on the same page (for example board count vs meeting count).
+            if _strong_explicit_candidate(rec):
+                continue
             if best_score - score >= 40.0:
                 rec["candidate_status"] = "no_candidate"
                 rec["candidate_disclosure_class"] = "no_candidate"
@@ -1927,6 +2064,12 @@ def find_candidates_for_indicator(
         # "董事会由X名董事组成" 表示总数，"董事会人数" 在附录中可能是子项
         if indicator.get("field_id") == "G_Q_001":
             page_text = page.get("text", "")
+            if re.search(r"董事会成员人数\s*人\s*[0-9][0-9,]*", page_text):
+                score += 100.0
+            elif re.search(r"董事会由\s*[0-9]+\s*名董事组成", page_text):
+                score += 90.0
+            elif "董事会成员" in page_text and "董事会成员人数" not in page_text:
+                score -= 25.0
             if re.search(r"董事会由.{0,15}名董事组成", page_text):
                 score += 80.0  # 强偏好完整的董事会描述模式（总数）
             elif "董事会由" in page_text:

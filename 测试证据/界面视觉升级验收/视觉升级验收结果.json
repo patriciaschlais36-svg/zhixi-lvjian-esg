@@ -1,5 +1,5 @@
 {
-  "base_url": "https://zhixi-lvjian-esg.onrender.com",
+  "base_url": "http://127.0.0.1:8777",
   "desktop": {
     "title": "智析绿鉴 - 面向上市公司ESG报告的多模态指标抽取与可信分析系统",
     "hero_visible": true,
@@ -11,19 +11,19 @@
       "yearChart": {
         "width": 593,
         "height": 220,
-        "colored": 29242,
+        "colored": 25060,
         "nonblank": true
       },
       "jobChart": {
-        "width": 407,
+        "width": 406,
         "height": 254,
-        "colored": 8375,
+        "colored": 8383,
         "nonblank": true
       },
       "indicatorChart": {
-        "width": 407,
+        "width": 406,
         "height": 254,
-        "colored": 28960,
+        "colored": 11417,
         "nonblank": true
       }
     },
@@ -33,9 +33,9 @@
     },
     "trend_meta": "3 个年度，单位：m3",
     "trend_canvas": {
-      "width": 1058,
-      "height": 353,
-      "colored": 128878,
+      "width": 1061,
+      "height": 354,
+      "colored": 130745,
       "nonblank": true
     },
     "comparison_items": 2,
@@ -49,34 +49,6 @@
       "scroll": 390
     },
     "overflow_elements": [
-      {
-        "tag": "BUTTON",
-        "id": "",
-        "cls": "nav-item",
-        "left": 351,
-        "right": 456
-      },
-      {
-        "tag": "BUTTON",
-        "id": "",
-        "cls": "nav-item",
-        "left": 462,
-        "right": 567
-      },
-      {
-        "tag": "BUTTON",
-        "id": "",
-        "cls": "nav-item",
-        "left": 573,
-        "right": 678
-      },
-      {
-        "tag": "BUTTON",
-        "id": "",
-        "cls": "nav-item",
-        "left": 684,
-        "right": 789
-      },
       {
         "tag": "TABLE",
         "id": "",
@@ -102,21 +74,21 @@
         "tag": "TH",
         "id": "",
         "cls": "",
-        "left": 209.15625,
-        "right": 552.484375
+        "left": 206.203125,
+        "right": 550.921875
       },
       {
         "tag": "TH",
         "id": "",
         "cls": "",
-        "left": 552.484375,
-        "right": 660.484375
+        "left": 550.921875,
+        "right": 658.921875
       },
       {
         "tag": "TH",
         "id": "",
         "cls": "",
-        "left": 660.484375,
+        "left": 658.921875,
         "right": 750
       },
       {
@@ -137,35 +109,35 @@
         "tag": "TD",
         "id": "",
         "cls": "",
-        "left": 209.15625,
-        "right": 552.484375
+        "left": 206.203125,
+        "right": 550.921875
       },
       {
         "tag": "TD",
         "id": "",
         "cls": "",
-        "left": 552.484375,
-        "right": 660.484375
+        "left": 550.921875,
+        "right": 658.921875
       },
       {
         "tag": "SPAN",
         "id": "",
         "cls": "status-badge is-success",
-        "left": 563.484375,
-        "right": 649.484375
+        "left": 561.921875,
+        "right": 647.921875
       },
       {
         "tag": "TD",
         "id": "",
         "cls": "",
-        "left": 660.484375,
+        "left": 658.921875,
         "right": 750
       },
       {
         "tag": "SPAN",
         "id": "",
         "cls": "file-unavailable",
-        "left": 671.484375,
+        "left": 669.921875,
         "right": 738.984375
       },
       {
@@ -179,35 +151,35 @@
         "tag": "TD",
         "id": "",
         "cls": "",
-        "left": 209.15625,
-        "right": 552.484375
+        "left": 206.203125,
+        "right": 550.921875
       },
       {
         "tag": "TD",
         "id": "",
         "cls": "",
-        "left": 552.484375,
-        "right": 660.484375
+        "left": 550.921875,
+        "right": 658.921875
       },
       {
         "tag": "SPAN",
         "id": "",
         "cls": "status-badge is-success",
-        "left": 563.484375,
-        "right": 649.484375
+        "left": 561.921875,
+        "right": 647.921875
       },
       {
         "tag": "TD",
         "id": "",
         "cls": "",
-        "left": 660.484375,
+        "left": 658.921875,
         "right": 750
       },
       {
         "tag": "SPAN",
         "id": "",
         "cls": "file-unavailable",
-        "left": 671.484375,
+        "left": 669.921875,
         "right": 738.984375
       },
       {
@@ -221,35 +193,35 @@
         "tag": "TD",
         "id": "",
         "cls": "",
-        "left": 209.15625,
-        "right": 552.484375
+        "left": 206.203125,
+        "right": 550.921875
       },
       {
         "tag": "TD",
         "id": "",
         "cls": "",
-        "left": 552.484375,
-        "right": 660.484375
+        "left": 550.921875,
+        "right": 658.921875
       },
       {
         "tag": "SPAN",
         "id": "",
         "cls": "status-badge is-success",
-        "left": 563.484375,
-        "right": 649.484375
+        "left": 561.921875,
+        "right": 647.921875
       },
       {
         "tag": "TD",
         "id": "",
         "cls": "",
-        "left": 660.484375,
+        "left": 658.921875,
         "right": 750
       },
       {
         "tag": "SPAN",
         "id": "",
         "cls": "file-unavailable",
-        "left": 671.484375,
+        "left": 669.921875,
         "right": 738.984375
       },
       {
@@ -257,6 +229,34 @@
         "id": "",
         "cls": "",
         "left": 30,
+        "right": 750
+      },
+      {
+        "tag": "TD",
+        "id": "",
+        "cls": "",
+        "left": 206.203125,
+        "right": 550.921875
+      },
+      {
+        "tag": "TD",
+        "id": "",
+        "cls": "",
+        "left": 550.921875,
+        "right": 658.921875
+      },
+      {
+        "tag": "SPAN",
+        "id": "",
+        "cls": "status-badge is-success",
+        "left": 561.921875,
+        "right": 647.921875
+      },
+      {
+        "tag": "TD",
+        "id": "",
+        "cls": "",
+        "left": 658.921875,
         "right": 750
       }
     ]
