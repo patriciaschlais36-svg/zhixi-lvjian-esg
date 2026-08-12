@@ -5,10 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>智析绿鉴 - 面向上市公司ESG报告的多模态指标抽取与可信分析系统</title>
     <meta name="description" content="上市公司ESG报告指标抽取、跨期比较、趋势分析与证据核验工作台" />
+    <link rel="preload" as="image" href="./品牌资产/背景页.jpg" fetchpriority="high" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d372d'/%3E%3Ctext x='32' y='43' text-anchor='middle' font-size='32' font-family='sans-serif' font-weight='700' fill='%23b8f0d6'%3E%E7%BB%BF%3C/text%3E%3C/svg%3E" />
     <link rel="stylesheet" href="./页面样式.css" />
   </head>
   <body>
+    <section class="site-hero" id="siteHero" aria-labelledby="siteHeroTitle">
+      <video class="site-hero-video" autoplay muted loop playsinline preload="metadata" poster="./品牌资产/背景页.jpg" aria-hidden="true">
+        <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260508_150921_27df94bd-d1e3-4440-9f55-314c4611902b.mp4" type="video/mp4" />
+      </video>
+      <header class="site-hero-nav">
+        <a class="site-hero-brand" href="#siteHero" aria-label="返回智析绿鉴首页">
+          <span class="site-hero-mark" aria-hidden="true">绿</span>
+          <span class="site-hero-wordmark"><strong>智析</strong>绿鉴</span>
+        </a>
+        <nav class="site-hero-links" aria-label="首页功能导航">
+          <button type="button" data-landing-view="overview">分析总览</button>
+          <button type="button" data-landing-view="upload">报告解析</button>
+          <button type="button" data-landing-view="companies">企业数据</button>
+          <button type="button" data-landing-view="analysis">趋势对比</button>
+          <button type="button" data-landing-view="evidence">证据核验</button>
+        </nav>
+        <button class="site-hero-nav-cta" type="button" data-landing-view="overview">进入工作台</button>
+        <button class="site-hero-menu-open" id="siteHeroMenuOpen" type="button" aria-label="打开导航菜单" aria-controls="siteHeroMenu" aria-expanded="false"><span></span><span></span><span></span></button>
+      </header>
+
+      <div class="site-hero-content">
+        <div class="site-hero-copy">
+          <h1 id="siteHeroTitle">让 ESG 披露<br /><span>有据可查</span></h1>
+          <p>面向上市公司 ESG 报告的多模态指标抽取与可信分析系统。</p>
+          <button class="site-hero-primary" type="button" data-landing-view="overview">进入工作台</button>
+        </div>
+        <div class="site-hero-report" aria-label="智析绿鉴参赛报告视觉">
+          <img class="site-hero-sheet site-hero-sheet-back" src="./品牌资产/背景页.jpg" alt="智析绿鉴报告背景页" width="1280" height="1809" />
+          <img class="site-hero-sheet site-hero-sheet-front" src="./品牌资产/封面.jpg" alt="智析绿鉴项目报告封面" width="1280" height="1809" fetchpriority="high" />
+        </div>
+      </div>
+    </section>
+
+    <div class="site-hero-menu" id="siteHeroMenu" hidden>
+      <div class="site-hero-menu-head">
+        <span class="site-hero-wordmark"><strong>智析</strong>绿鉴</span>
+        <button id="siteHeroMenuClose" type="button" aria-label="关闭导航菜单">×</button>
+      </div>
+      <nav aria-label="移动端功能导航">
+        <button type="button" data-landing-view="overview">分析总览</button>
+        <button type="button" data-landing-view="upload">报告解析</button>
+        <button type="button" data-landing-view="companies">企业数据</button>
+        <button type="button" data-landing-view="analysis">趋势对比</button>
+        <button type="button" data-landing-view="evidence">证据核验</button>
+      </nav>
+      <button class="site-hero-menu-cta" type="button" data-landing-view="overview">进入工作台</button>
+    </div>
+
     <div class="app-shell">
       <aside class="sidebar" aria-label="主导航">
         <div class="brand">

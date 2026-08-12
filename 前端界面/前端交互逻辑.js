@@ -124,6 +124,7 @@ async function api(path, options = {}) {
 }
 
 function setView(viewName) {
+  document.body.dataset.activeView = viewName;
   qsa("[data-view]").forEach((button) => {
     const active = button.dataset.view === viewName;
     button.classList.toggle("active", active);
@@ -137,11 +138,41 @@ function setView(viewName) {
     page.classList.toggle("is-active", active);
   });
   history.replaceState(null, "", `#${viewName}`);
-  document.documentElement.scrollTop = 0;
-  document.body.scrollTop = 0;
+  const hero = byId("siteHero");
+  const appShell = document.querySelector(".app-shell");
+  if (appShell && (!hero || window.scrollY >= hero.offsetHeight - 8)) appShell.scrollIntoView({ behavior: "auto", block: "start" });
   if (viewName === "companies") loadCompanies();
   if (viewName === "indicators") renderIndicators();
   if (viewName === "pipeline") loadJobs();
+}
+
+function closeSiteHeroMenu() {
+  const menu = byId("siteHeroMenu");
+  const trigger = byId("siteHeroMenuOpen");
+  if (!menu || !trigger) return;
+  menu.hidden = true;
+  menu.classList.remove("is-open");
+  trigger.setAttribute("aria-expanded", "false");
+  document.body.classList.remove("site-menu-open");
+}
+
+function openSiteHeroMenu() {
+  const menu = byId("siteHeroMenu");
+  const trigger = byId("siteHeroMenuOpen");
+  if (!menu || !trigger) return;
+  menu.hidden = false;
+  menu.classList.add("is-open");
+  trigger.setAttribute("aria-expanded", "true");
+  document.body.classList.add("site-menu-open");
+}
+
+function enterWorkspace(viewName) {
+  setView(viewName);
+  closeSiteHeroMenu();
+  document.querySelector(".app-shell")?.scrollIntoView({
+    behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+    block: "start",
+  });
 }
 
 function canvasContext(canvas) {
@@ -777,6 +808,10 @@ function closeGlobalSearch() {
 
 function bindEvents() {
   qsa("[data-view]").forEach((button) => button.addEventListener("click", () => setView(button.dataset.view)));
+  qsa("[data-landing-view]").forEach((button) => button.addEventListener("click", () => enterWorkspace(button.dataset.landingView)));
+  byId("siteHeroMenuOpen")?.addEventListener("click", openSiteHeroMenu);
+  byId("siteHeroMenuClose")?.addEventListener("click", closeSiteHeroMenu);
+  document.addEventListener("keydown", (event) => { if (event.key === "Escape") closeSiteHeroMenu(); });
   byId("uploadForm")?.addEventListener("submit", submitUpload);
   byId("reportFile")?.addEventListener("change", (event) => {
     const file = event.target.files?.[0];

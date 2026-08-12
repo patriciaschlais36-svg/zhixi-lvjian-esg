@@ -31,6 +31,7 @@ def 画布状态(页面, 画布编号: str) -> dict[str, int | bool]:
 def main() -> None:
     结果: dict[str, object] = {
         "base_url": 服务地址,
+        "landing": {},
         "desktop": {},
         "mobile": {},
         "views": {},
@@ -48,7 +49,26 @@ def main() -> None:
         页面.on("console", lambda 消息: 结果["console_errors"].append(消息.text) if 消息.type == "error" else None)
         页面.on("pageerror", lambda 异常: 结果["console_errors"].append(str(异常)))
         页面.goto(服务地址, wait_until="networkidle", timeout=60_000)
+        页面.wait_for_selector("#siteHeroTitle", timeout=30_000)
         页面.wait_for_selector("#summaryKpis .kpi-item", timeout=30_000)
+
+        结果["landing"] = {
+            "heading": 页面.locator("#siteHeroTitle").inner_text(),
+            "hero_height": 页面.locator("#siteHero").evaluate("element => Math.round(element.getBoundingClientRect().height)"),
+            "viewport_height": 页面.evaluate("window.innerHeight"),
+            "desktop_nav_links": 页面.locator(".site-hero-links [data-landing-view]").count(),
+            "report_sheets": 页面.locator(".site-hero-sheet").count(),
+            "video": 页面.locator(".site-hero-video").evaluate(
+                """video => ({
+                  autoplay: video.autoplay,
+                  muted: video.muted,
+                  loop: video.loop,
+                  playsInline: video.playsInline,
+                  poster: video.getAttribute('poster'),
+                  source: video.querySelector('source')?.getAttribute('src') || ''
+                })"""
+            ),
+        }
 
         结果["desktop"] = {
             "title": 页面.title(),
@@ -67,6 +87,10 @@ def main() -> None:
         全页截图 = 证据目录 / "桌面端_新版分析总览_全页审计.png"
         页面.screenshot(path=str(全页截图), full_page=True)
         结果["screenshots"]["desktop_overview_full"] = str(全页截图.relative_to(项目根目录))
+
+        页面.locator(".site-hero-primary").click()
+        页面.wait_for_timeout(900)
+        结果["landing"]["cta_workspace_top"] = 页面.locator(".app-shell").evaluate("element => Math.round(element.getBoundingClientRect().top)")
 
         for 视图 in ("upload", "companies", "indicators", "analysis", "evidence", "pipeline", "overview"):
             页面.locator(f'[data-view="{视图}"]').click()
@@ -108,11 +132,23 @@ def main() -> None:
         移动页.on("console", lambda 消息: 移动错误.append(消息.text) if 消息.type == "error" else None)
         移动页.on("pageerror", lambda 异常: 移动错误.append(str(异常)))
         移动页.goto(服务地址, wait_until="networkidle", timeout=60_000)
+        移动页.wait_for_selector("#siteHeroTitle", timeout=30_000)
         移动页.wait_for_selector("#summaryKpis .kpi-item", timeout=30_000)
         移动页.evaluate("window.scrollTo(0, 0)")
         移动截图 = 证据目录 / "移动端_新版分析总览.png"
         移动页.screenshot(path=str(移动截图), full_page=True)
         结果["screenshots"]["mobile_overview"] = str(移动截图.relative_to(项目根目录))
+        移动页.locator("#siteHeroMenuOpen").click()
+        移动菜单截图 = 证据目录 / "移动端_新版全屏菜单.png"
+        移动页.screenshot(path=str(移动菜单截图), full_page=False)
+        结果["screenshots"]["mobile_menu"] = str(移动菜单截图.relative_to(项目根目录))
+        结果["mobile_menu"] = {
+            "opened": 移动页.locator("#siteHeroMenu").is_visible(),
+            "expanded": 移动页.locator("#siteHeroMenuOpen").get_attribute("aria-expanded"),
+            "link_count": 移动页.locator("#siteHeroMenu [data-landing-view]").count(),
+        }
+        移动页.locator("#siteHeroMenuClose").click()
+        结果["mobile_menu"]["closed"] = not 移动页.locator("#siteHeroMenu").is_visible()
         结果["mobile"] = {
             "hero_visible": 移动页.locator(".overview-hero").is_visible(),
             "kpi_count": 移动页.locator("#summaryKpis .kpi-item").count(),
@@ -133,6 +169,14 @@ def main() -> None:
     输出路径.write_text(json.dumps(结果, ensure_ascii=False, indent=2), encoding="utf-8")
 
     assert 结果["desktop"]["title"].startswith("智析绿鉴")
+    assert "让 ESG 披露" in 结果["landing"]["heading"]
+    assert 结果["landing"]["hero_height"] >= max(600, 结果["landing"]["viewport_height"])
+    assert 结果["landing"]["desktop_nav_links"] == 5
+    assert 结果["landing"]["report_sheets"] == 2
+    assert all(结果["landing"]["video"][属性] for 属性 in ("autoplay", "muted", "loop", "playsInline"))
+    assert 结果["landing"]["video"]["poster"].endswith("品牌资产/背景页.jpg")
+    assert 结果["landing"]["video"]["source"].endswith(".mp4")
+    assert abs(结果["landing"]["cta_workspace_top"]) <= 2
     assert 结果["desktop"]["hero_visible"] is True
     assert 结果["desktop"]["kpi_count"] == 4
     assert 结果["desktop"]["panel_count"] == 4
@@ -149,6 +193,7 @@ def main() -> None:
     assert 结果["mobile"]["hero_visible"] is True
     assert 结果["mobile"]["kpi_count"] == 4
     assert 结果["mobile"]["document_overflow"]["scroll"] <= 结果["mobile"]["document_overflow"]["viewport"] + 2
+    assert 结果["mobile_menu"] == {"opened": True, "expanded": "true", "link_count": 6, "closed": True}
     assert not 结果["console_errors"], 结果["console_errors"]
 
     print(json.dumps(结果, ensure_ascii=False, indent=2))

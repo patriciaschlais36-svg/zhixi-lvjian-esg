@@ -1,5 +1,21 @@
 {
   "base_url": "http://127.0.0.1:8000",
+  "landing": {
+    "heading": "让 ESG 披露\n有据可查",
+    "hero_height": 1000,
+    "viewport_height": 1000,
+    "desktop_nav_links": 5,
+    "report_sheets": 2,
+    "video": {
+      "autoplay": true,
+      "muted": true,
+      "loop": true,
+      "playsInline": true,
+      "poster": "./品牌资产/背景页.jpg",
+      "source": "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260508_150921_27df94bd-d1e3-4440-9f55-314c4611902b.mp4"
+    },
+    "cta_workspace_top": 0
+  },
   "desktop": {
     "title": "智析绿鉴 - 面向上市公司ESG报告的多模态指标抽取与可信分析系统",
     "hero_visible": true,
@@ -298,7 +314,14 @@
     "desktop_overview_full": "测试证据\\界面视觉升级验收\\桌面端_新版分析总览_全页审计.png",
     "desktop_analysis": "测试证据\\界面视觉升级验收\\桌面端_新版趋势与企业对比.png",
     "desktop_upload": "测试证据\\界面视觉升级验收\\桌面端_新版报告解析.png",
-    "mobile_overview": "测试证据\\界面视觉升级验收\\移动端_新版分析总览.png"
+    "mobile_overview": "测试证据\\界面视觉升级验收\\移动端_新版分析总览.png",
+    "mobile_menu": "测试证据\\界面视觉升级验收\\移动端_新版全屏菜单.png"
   },
-  "console_errors": []
+  "console_errors": [],
+  "mobile_menu": {
+    "opened": true,
+    "expanded": "true",
+    "link_count": 6,
+    "closed": true
+  }
 }
